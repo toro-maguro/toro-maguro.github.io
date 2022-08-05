@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Others on Sacoche</title>
+    <link>https://toro-maguro.github.io/categories/others/</link>
+    <description>Recent content in Others on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 05 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/others/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ブログを引っ越して、RMarkdown &#43; Github pages環境にした</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-moveblog/</link>
+      <pubDate>Fri, 05 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-05-moveblog/</guid>
+      <description>引っ越しした理由 NOTE: これは完全に備忘録で、自分の読者像的にマッチしている人はおそらくいません笑 1番の理由は、gitとgithubを勉強している</description>
+    </item>
+    
+  </channel>
+</rss>
