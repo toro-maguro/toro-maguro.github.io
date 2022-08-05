@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Epideiology on Sacoche</title>
+    <link>https://zhaohuabing.com/categories/epideiology/</link>
+    <description>Recent content in Epideiology on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 05 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://zhaohuabing.com/categories/epideiology/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>powerの分布を返す関数、作った</title>
+      <link>https://zhaohuabing.com/post/2022-08-05-powerfunction/</link>
+      <pubDate>Fri, 05 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://zhaohuabing.com/post/2022-08-05-powerfunction/</guid>
+      <description>powerの分布を考えてみよう 真の値がわかっている場合の、powerの分布 NOTE: これはあくまで真の値を知っているときの話であって、標本値の話では</description>
+    </item>
+    
+  </channel>
+</rss>
