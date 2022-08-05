@@ -48,11 +48,7 @@ image: ''
 # 準備
 
 ```{r, warning=FALSE, message=FALSE}
-library(tidyverse)
-library(dplyr)
-
-library(epiR)
-library(epitools)
+pacman::p_load(tidyverse, epiR, epitools)
 ```
 
 ## データ作り
@@ -61,42 +57,37 @@ library(epitools)
 
 デフォルトの設定は以下の通りです．
 
-* N: 1000人
+* N: 2000人
 * イベント発生割合: 50%
 * 曝露群の割合: 25%
-* 曝露のリスク比: 1.5倍
+* 曝露のリスク比: 2.0倍
 
 ```{r}
-# ここで自由に設定してください
+# データセットを作る関数
+MakeData <- function(n=2000, p_event=0.25, p_exposure=0.5, rr_exposure=2, rr_sex=0.6){
+  set.seed(1)
+  baseline_risk <- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
+  ID <- c(1:n)
+  sex <- c(rep(0, n*0.6), rep(1, n*0.4))
+  df <- data.frame(ID = ID, sex = sex)
 
-n <- 2000 # Number of participants
-p_event <- 0.3 # event prevalence
-p_exposure <- 0.5 # proportion of exposure group
-rr_exposure <- 2 # risk ratio of exposure
-rr_sex <- 0.6 # risk ratio of sex
+  df <- df %>% 
+    mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %>% 
+    mutate(risk = case_when(
+      exposure == 0 & sex == 0 ~ baseline_risk,
+      exposure == 0 & sex == 1 ~ baseline_risk*rr_sex,
+      exposure == 1 & sex == 0 ~ baseline_risk*rr_exposure,
+      exposure == 1 & sex == 1 ~ baseline_risk*rr_exposure*rr_sex
+    )) %>% 
+    mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
+  
+  return(df)
+}
+
+df <- MakeData()
 ```
 
 
-```{r}
-set.seed(1)
-baseline_risk <- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
-
-ID <- c(1:n)
-sex <- c(rep(0, n*0.6), rep(1, n*0.4))
-df <- data.frame(ID = ID, sex = sex)
-
-df <- df %>% 
-  mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %>% 
-  mutate(risk = case_when(
-    exposure == 0 & sex == 0 ~ baseline_risk,
-    exposure == 0 & sex == 1 ~ baseline_risk*rr_sex,
-    exposure == 1 & sex == 0 ~ baseline_risk*rr_exposure,
-    exposure == 1 & sex == 1 ~ baseline_risk*rr_exposure*rr_sex
-  )) %>% 
-  mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
-
-table(df$outcome)
-```
 
 ## データのチェック
 
@@ -112,17 +103,15 @@ women <- matrix(c(tab[2,2,2], tab[2,1,2], tab[1,2,2], tab[1,1,2]),
               nrow = 2, byrow = TRUE)
 dat <- array(c(men, women), dim = c(2,2,2))
 epi.2by2(dat, method = "cross.sectional")
-tab
 ```
 
 
-デフォルトの設定だと，効果の指標は次のとおりです．
+デフォルトの設定 (Mantel-Haenszel) だと，効果の指標は次のとおりです．
 
-* **リスク比: 1.56 [95%CI: 1.39-1.74]**
-* **オッズ比: 2.89 [95%CI: 2.12-3.93]**
+* **risk ratio: 1.91 [95%CI: 1.60-2.27]**
+* **odds ratio: 2.30 [95%CI: 1.95-3.03]**
 
-**リスク比とオッズ比との乖離が結構大きい**ですね．<br/n>
-「もしp_eventが小さかったら？」というのもぜひ試してみてください．
+**リスク比とオッズ比との乖離がそれなりにありますね**．<br/n>
 
 # Odds ratio vs Risk ratio
 
@@ -160,16 +149,6 @@ exp(coef(logistic)) # OR
 exp(confint(logistic)) # 95%CI
 ```
 
-ちなみに，オッズからリスクを推定することも可能なのですが，信頼区間をうまく得ることができません．<br/n>
-参考: [Wikipedia](https://ja.wikipedia.org/wiki/ロジスティック回帰)
-
-```{r}
-p1 <- 1/(1+exp(0.1867)) # probability at non-exposed group
-p2 <- 1/(1+exp(0.1867-1.061)) # probability at exposed group
-
-p2/p1 # risk ratio, 先ほどの2×2表と概ね一致
-```
-
 
 ## ポアソン回帰
 
@@ -179,8 +158,6 @@ p2/p1 # risk ratio, 先ほどの2×2表と概ね一致
 **オフセット項**を導入することで，割合もモデリングすることが可能になります．
 
 [J-Stageの解説論文](https://www.jstage.jst.go.jp/article/weed/55/4/55_4_287/_pdf)
-
-<br/n>
 
 また，ポアソン回帰は**0/1のbinary outcomeに対しても適用することができます**．<br/n>
 イメージする上では，[Petersen, et al. 2008](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/1471-2288-8-9)のフレーズがわかりやすいように感じます．
@@ -200,8 +177,8 @@ exp(coef(poisson)) # risk ratio
 exp(confint(poisson)) # 95%CI, basic poisson regression
 ```
 
-ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，**RR = 1.56 [95%CI: 1.29-1.86]** となりました．<br/n>
-一方，2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** と，**ポアソン回帰の信頼区間の幅が広くなっています**．
+ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，**RR = 2.01 [95%CI: 1.66-2.45]** となりました．<br/n>
+一方，2×2表で得たリスク比は **1.91 [95%CI: 1.60-2.27]** であり，**ポアソン回帰で得た信頼区間の幅の方が大きくなっています**．
 
 ここが，Zou (2004) の言うところの "**On the other hand, use of Poisson regression tends to provide conservative results**" 
 にあたるのでしょう．
@@ -214,8 +191,7 @@ exp(confint(poisson)) # 95%CI, basic poisson regression
 
 
 ```{r, warning=FALSE, message=FALSE}
-library(lmtest)
-library(sandwich)
+pacman::p_load(lmtest, sandwich)
 
 modified_poiss <- coeftest(poisson, vcov = sandwich)
 ```
@@ -226,7 +202,6 @@ modified_poiss <- coeftest(poisson, vcov = sandwich)
 
 ```{r}
 modified_poiss # 修正ポアソン回帰
-summary(poisson) # (再掲) 通常のポアソン回帰
 ```
 
 では，修正ポアソン回帰に基づく信頼区間を計算します．<br/n>
@@ -241,7 +216,7 @@ modpoiss_results <- round(cbind(exp(cbind(RR = modified_poiss[,1],
 modpoiss_results
 ```
 
-2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** ですから，**2×2表と修正ポアソン回帰との信頼区間の幅が一致しました！**．
+2×2表で得たリスク比は **2.01 [95%CI: 1.70-2.40]** ですから，**通常のポアソン回帰で得たRR = 2.01 [95%CI: 1.66-2.45]よりも狭い信頼区間を得ることができました**．
 
 <br/n>
 <br/n>
@@ -301,7 +276,7 @@ exp(confint(logbin)) # 95%CI
 ```
 
 
-2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** でしたから，普通にできてますね．
+2×2表で得たリスク比は **1.91 [95%CI: 1.60-2.27]** でしたから，普通にできてますね．
 
 収束の問題が起こるのは，データが十分にない（サンプルサイズ・イベント数など）場合のようです．[Williamson, et al. 2013](https://ete-online.biomedcentral.com/articles/10.1186/1742-7622-10-14)
 

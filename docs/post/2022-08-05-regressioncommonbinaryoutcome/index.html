@@ -246,49 +246,39 @@
 </div>
 <div id="準備" class="section level1">
 <h1>準備</h1>
-<pre class="r"><code>library(tidyverse)
-library(dplyr)
-
-library(epiR)
-library(epitools)</code></pre>
+<pre class="r"><code>pacman::p_load(tidyverse, epiR, epitools)</code></pre>
 <div id="データ作り" class="section level2">
 <h2>データ作り</h2>
 <p>自由にデータを操作できるように，このセクションで2×2表のデータを作っていきます．</p>
 <p>デフォルトの設定は以下の通りです．</p>
 <ul>
-<li>N: 1000人</li>
+<li>N: 2000人</li>
 <li>イベント発生割合: 50%</li>
 <li>曝露群の割合: 25%</li>
-<li>曝露のリスク比: 1.5倍</li>
+<li>曝露のリスク比: 2.0倍</li>
 </ul>
-<pre class="r"><code># ここで自由に設定してください
+<pre class="r"><code># データセットを作る関数
+MakeData &lt;- function(n=2000, p_event=0.25, p_exposure=0.5, rr_exposure=2, rr_sex=0.6){
+  set.seed(1)
+  baseline_risk &lt;- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
+  ID &lt;- c(1:n)
+  sex &lt;- c(rep(0, n*0.6), rep(1, n*0.4))
+  df &lt;- data.frame(ID = ID, sex = sex)
 
-n &lt;- 2000 # Number of participants
-p_event &lt;- 0.3 # event prevalence
-p_exposure &lt;- 0.5 # proportion of exposure group
-rr_exposure &lt;- 2 # risk ratio of exposure
-rr_sex &lt;- 0.6 # risk ratio of sex</code></pre>
-<pre class="r"><code>set.seed(1)
-baseline_risk &lt;- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
+  df &lt;- df %&gt;% 
+    mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %&gt;% 
+    mutate(risk = case_when(
+      exposure == 0 &amp; sex == 0 ~ baseline_risk,
+      exposure == 0 &amp; sex == 1 ~ baseline_risk*rr_sex,
+      exposure == 1 &amp; sex == 0 ~ baseline_risk*rr_exposure,
+      exposure == 1 &amp; sex == 1 ~ baseline_risk*rr_exposure*rr_sex
+    )) %&gt;% 
+    mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
+  
+  return(df)
+}
 
-ID &lt;- c(1:n)
-sex &lt;- c(rep(0, n*0.6), rep(1, n*0.4))
-df &lt;- data.frame(ID = ID, sex = sex)
-
-df &lt;- df %&gt;% 
-  mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %&gt;% 
-  mutate(risk = case_when(
-    exposure == 0 &amp; sex == 0 ~ baseline_risk,
-    exposure == 0 &amp; sex == 1 ~ baseline_risk*rr_sex,
-    exposure == 1 &amp; sex == 0 ~ baseline_risk*rr_exposure,
-    exposure == 1 &amp; sex == 1 ~ baseline_risk*rr_exposure*rr_sex
-  )) %&gt;% 
-  mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
-
-table(df$outcome)</code></pre>
-<pre><code>## 
-##    0    1 
-## 1503  497</code></pre>
+df &lt;- MakeData()</code></pre>
 </div>
 <div id="データのチェック" class="section level2">
 <h2>データのチェック</h2>
@@ -303,49 +293,34 @@ women &lt;- matrix(c(tab[2,2,2], tab[2,1,2], tab[1,2,2], tab[1,1,2]),
 dat &lt;- array(c(men, women), dim = c(2,2,2))
 epi.2by2(dat, method = &quot;cross.sectional&quot;)</code></pre>
 <pre><code>##              Outcome +    Outcome -      Total        Prevalence *        Odds
-## Exposed +          295          560        855                34.5       0.527
-## Exposed -          202          943       1145                17.6       0.214
-## Total              497         1503       2000                24.9       0.331
+## Exposed +          251          604        855                29.4       0.416
+## Exposed -          167          978       1145                14.6       0.171
+## Total              418         1582       2000                20.9       0.264
 ## 
 ## Point estimates and 95% CIs:
 ## -------------------------------------------------------------------
-## Prevalence ratio (crude)                       1.96 (1.67, 2.28)
-## Prevalence ratio (M-H)                         1.86 (1.59, 2.17)
+## Prevalence ratio (crude)                       2.01 (1.69, 2.40)
+## Prevalence ratio (M-H)                         1.91 (1.60, 2.27)
 ## Inc risk ratio (crude:M-H)                     1.05
-## Odds ratio (crude)                             2.46 (2.00, 3.03)
-## Odds ratio (M-H)                               2.32 (1.89, 2.87)
+## Odds ratio (crude)                             2.43 (1.95, 3.03)
+## Odds ratio (M-H)                               2.30 (1.84, 2.87)
 ## Odds ratio (crude:M-H)                         1.06
-## Atributable prevalence in the exposed (crude) *16.86 (12.98, 20.74)
-## Atributable prevalence in the exposed (M-H) *  15.67 (11.17, 20.17)
+## Atributable prevalence in the exposed (crude) *14.77 (11.10, 18.45)
+## Atributable prevalence in the exposed (M-H) *  13.74 (9.51, 17.97)
 ## Atributable prevalence (crude:M-H)             1.08
 ## -------------------------------------------------------------------
-##  Woolf test of homogeneity of PRs: chi2(1) = 0.569 Pr&gt;chi2 = 0.451
-##  Woolf test of homogeneity of ORs: chi2(1) = 0.067 Pr&gt;chi2 = 0.795
-##  Test that M-H adjusted OR = 1:  chi2(1) = 64.030 Pr&gt;chi2 = &lt;0.001
+##  Woolf test of homogeneity of PRs: chi2(1) = 0.409 Pr&gt;chi2 = 0.523
+##  Woolf test of homogeneity of ORs: chi2(1) = 0.069 Pr&gt;chi2 = 0.792
+##  Test that M-H adjusted OR = 1:  chi2(1) = 55.430 Pr&gt;chi2 = &lt;0.001
 ##  Wald confidence limits
 ##  M-H: Mantel-Haenszel; CI: confidence interval
 ##  * Outcomes per 100 population units</code></pre>
-<pre class="r"><code>tab</code></pre>
-<pre><code>## , , sex = 0
-## 
-##         outcome
-## exposure   0   1
-##        0 493 135
-##        1 352 220
-## 
-## , , sex = 1
-## 
-##         outcome
-## exposure   0   1
-##        0 450  67
-##        1 208  75</code></pre>
-<p>デフォルトの設定だと，効果の指標は次のとおりです．</p>
+<p>デフォルトの設定 (Mantel-Haenszel) だと，効果の指標は次のとおりです．</p>
 <ul>
-<li><strong>リスク比: 1.56 [95%CI: 1.39-1.74]</strong></li>
-<li><strong>オッズ比: 2.89 [95%CI: 2.12-3.93]</strong></li>
+<li><strong>risk ratio: 1.91 [95%CI: 1.60-2.27]</strong></li>
+<li><strong>odds ratio: 2.30 [95%CI: 1.95-3.03]</strong></li>
 </ul>
-<p><strong>リスク比とオッズ比との乖離が結構大きい</strong>ですね．<br/n>
-「もしp_eventが小さかったら？」というのもぜひ試してみてください．</p>
+<p><strong>リスク比とオッズ比との乖離がそれなりにありますね</strong>．<br/n></p>
 </div>
 </div>
 <div id="odds-ratio-vs-risk-ratio" class="section level1">
@@ -377,38 +352,31 @@ summary(logistic)</code></pre>
 ##     data = df)
 ## 
 ## Deviance Residuals: 
-##    Min      1Q  Median      3Q     Max  
-## -0.920  -0.920  -0.623  -0.623   1.863  
+##     Min       1Q   Median       3Q      Max  
+## -0.8337  -0.8337  -0.5615  -0.5615   1.9622  
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.54080    0.07753 -19.874   &lt;2e-16 ***
-## exposure     0.89984    0.10577   8.508   &lt;2e-16 ***
+## (Intercept) -1.76752    0.08373 -21.110  &lt; 2e-16 ***
+## exposure     0.88939    0.11247   7.908 2.62e-15 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 2242.7  on 1999  degrees of freedom
-## Residual deviance: 2168.7  on 1998  degrees of freedom
-## AIC: 2172.7
+##     Null deviance: 2050.5  on 1999  degrees of freedom
+## Residual deviance: 1986.5  on 1998  degrees of freedom
+## AIC: 1990.5
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <pre class="r"><code>exp(coef(logistic)) # OR</code></pre>
 <pre><code>## (Intercept)    exposure 
-##    0.214210    2.459203</code></pre>
+##   0.1707566   2.4336559</code></pre>
 <pre class="r"><code>exp(confint(logistic)) # 95%CI</code></pre>
 <pre><code>## Waiting for profiling to be done...</code></pre>
 <pre><code>##                 2.5 %    97.5 %
-## (Intercept) 0.1835379 0.2487631
-## exposure    2.0003509 3.0285445</code></pre>
-<p>ちなみに，オッズからリスクを推定することも可能なのですが，信頼区間をうまく得ることができません．<br/n>
-参考: <a href="https://ja.wikipedia.org/wiki/ロジスティック回帰">Wikipedia</a></p>
-<pre class="r"><code>p1 &lt;- 1/(1+exp(0.1867)) # probability at non-exposed group
-p2 &lt;- 1/(1+exp(0.1867-1.061)) # probability at exposed group
-
-p2/p1 # risk ratio, 先ほどの2×2表と概ね一致</code></pre>
-<pre><code>## [1] 1.556123</code></pre>
+## (Intercept) 0.1444366 0.2005908
+## exposure    1.9541138 3.0375549</code></pre>
 </div>
 <div id="ポアソン回帰" class="section level2">
 <h2>ポアソン回帰</h2>
@@ -417,7 +385,6 @@ p2/p1 # risk ratio, 先ほどの2×2表と概ね一致</code></pre>
 また，故障品のモデリングなど「全体でいくつ作っているか」も重要になる場合は，
 <strong>オフセット項</strong>を導入することで，割合もモデリングすることが可能になります．</p>
 <p><a href="https://www.jstage.jst.go.jp/article/weed/55/4/55_4_287/_pdf">J-Stageの解説論文</a></p>
-<p><br/n></p>
 <p>また，ポアソン回帰は<strong>0/1のbinary outcomeに対しても適用することができます</strong>．<br/n>
 イメージする上では，<a href="https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/1471-2288-8-9">Petersen, et al. 2008</a>のフレーズがわかりやすいように感じます．</p>
 <blockquote>
@@ -435,40 +402,39 @@ summary(poisson)</code></pre>
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -0.8307  -0.8307  -0.5940  -0.5940   1.3500  
+## -0.7662  -0.7662  -0.5401  -0.5401   1.4636  
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.73489    0.07036 -24.657  &lt; 2e-16 ***
-## exposure     0.67077    0.09133   7.345 2.06e-13 ***
+## (Intercept) -1.92517    0.07738 -24.879  &lt; 2e-16 ***
+## exposure     0.69952    0.09986   7.005 2.47e-12 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for poisson family taken to be 1)
 ## 
-##     Null deviance: 1384.0  on 1999  degrees of freedom
-## Residual deviance: 1328.7  on 1998  degrees of freedom
-## AIC: 2326.7
+##     Null deviance: 1308.7  on 1999  degrees of freedom
+## Residual deviance: 1258.3  on 1998  degrees of freedom
+## AIC: 2098.3
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <pre class="r"><code>exp(coef(poisson)) # risk ratio</code></pre>
 <pre><code>## (Intercept)    exposure 
-##   0.1764192   1.9557350</code></pre>
+##   0.1458515   2.0127815</code></pre>
 <pre class="r"><code>exp(confint(poisson)) # 95%CI, basic poisson regression</code></pre>
 <pre><code>## Waiting for profiling to be done...</code></pre>
-<pre><code>##                 2.5 %   97.5 %
-## (Intercept) 0.1531951 0.201878
-## exposure    1.6366505 2.341715</code></pre>
-<p>ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，<strong>RR = 1.56 [95%CI: 1.29-1.86]</strong> となりました．<br/n>
-一方，2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> と，<strong>ポアソン回帰の信頼区間の幅が広くなっています</strong>．</p>
+<pre><code>##                2.5 %    97.5 %
+## (Intercept) 0.124834 0.1691037
+## exposure    1.656857 2.4514644</code></pre>
+<p>ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，<strong>RR = 2.01 [95%CI: 1.66-2.45]</strong> となりました．<br/n>
+一方，2×2表で得たリスク比は <strong>1.91 [95%CI: 1.60-2.27]</strong> であり，<strong>ポアソン回帰で得た信頼区間の幅の方が大きくなっています</strong>．</p>
 <p>ここが，Zou (2004) の言うところの “<strong>On the other hand, use of Poisson regression tends to provide conservative results</strong>”
 にあたるのでしょう．</p>
 <p><br/n></p>
 <p>そこで，Zouの手法による修正ポアソン回帰の分散計算を実行します．<br/n>
 参考1: <a href="https://charliemarks.com/r-tutorials/modifiedpoissonregression">Zou’s Modified Poisson Regression</a>,
 参考2: <a href="https://rpubs.com/kaz_yos/ku-r3">いろいろ情報盛りだくさん</a></p>
-<pre class="r"><code>library(lmtest)
-library(sandwich)
+<pre class="r"><code>pacman::p_load(lmtest, sandwich)
 
 modified_poiss &lt;- coeftest(poisson, vcov = sandwich)</code></pre>
 <div id="ポアソン回帰の比較" class="section level3">
@@ -479,34 +445,10 @@ modified_poiss &lt;- coeftest(poisson, vcov = sandwich)</code></pre>
 ## z test of coefficients:
 ## 
 ##              Estimate Std. Error  z value  Pr(&gt;|z|)    
-## (Intercept) -1.734892   0.063852 -27.1703 &lt; 2.2e-16 ***
-## exposure     0.670766   0.079356   8.4526 &lt; 2.2e-16 ***
+## (Intercept) -1.925166   0.071517 -26.9191 &lt; 2.2e-16 ***
+## exposure     0.699518   0.089046   7.8557 3.975e-15 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code>summary(poisson) # (再掲) 通常のポアソン回帰</code></pre>
-<pre><code>## 
-## Call:
-## glm(formula = outcome ~ exposure, family = poisson(link = &quot;log&quot;), 
-##     data = df)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -0.8307  -0.8307  -0.5940  -0.5940   1.3500  
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.73489    0.07036 -24.657  &lt; 2e-16 ***
-## exposure     0.67077    0.09133   7.345 2.06e-13 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## (Dispersion parameter for poisson family taken to be 1)
-## 
-##     Null deviance: 1384.0  on 1999  degrees of freedom
-## Residual deviance: 1328.7  on 1998  degrees of freedom
-## AIC: 2326.7
-## 
-## Number of Fisher Scoring iterations: 6</code></pre>
 <p>では，修正ポアソン回帰に基づく信頼区間を計算します．<br/n>
 面倒なことに，自分で計算をしなくてはならないようです．</p>
 <pre class="r"><code>modpoiss_results &lt;- round(cbind(exp(cbind(RR = modified_poiss[,1], 
@@ -516,9 +458,9 @@ modified_poiss &lt;- coeftest(poisson, vcov = sandwich)</code></pre>
 
 modpoiss_results</code></pre>
 <pre><code>##                 RR    LCI    UCI P
-## (Intercept) 0.1764 0.1557 0.1999 0
-## exposure    1.9557 1.6740 2.2849 0</code></pre>
-<p>2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> ですから，<strong>2×2表と修正ポアソン回帰との信頼区間の幅が一致しました！</strong>．</p>
+## (Intercept) 0.1459 0.1268 0.1678 0
+## exposure    2.0128 1.6904 2.3966 0</code></pre>
+<p>2×2表で得たリスク比は <strong>2.01 [95%CI: 1.70-2.40]</strong> ですから，<strong>通常のポアソン回帰で得たRR = 2.01 [95%CI: 1.66-2.45]よりも狭い信頼区間を得ることができました</strong>．</p>
 <p><br/n>
 <br/n></p>
 </div>
@@ -568,32 +510,32 @@ summary(logbin)</code></pre>
 ##     data = df)
 ## 
 ## Deviance Residuals: 
-##    Min      1Q  Median      3Q     Max  
-## -0.920  -0.920  -0.623  -0.623   1.863  
+##     Min       1Q   Median       3Q      Max  
+## -0.8337  -0.8337  -0.5615  -0.5615   1.9622  
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.73489    0.06385 -27.170   &lt;2e-16 ***
-## exposure     0.67077    0.07936   8.453   &lt;2e-16 ***
+## (Intercept) -1.92517    0.07152 -26.919  &lt; 2e-16 ***
+## exposure     0.69952    0.08905   7.856 3.97e-15 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 2242.7  on 1999  degrees of freedom
-## Residual deviance: 2168.7  on 1998  degrees of freedom
-## AIC: 2172.7
+##     Null deviance: 2050.5  on 1999  degrees of freedom
+## Residual deviance: 1986.5  on 1998  degrees of freedom
+## AIC: 1990.5
 ## 
 ## Number of Fisher Scoring iterations: 6</code></pre>
 <pre class="r"><code>exp(coef(logbin)) # risk ratio</code></pre>
 <pre><code>## (Intercept)    exposure 
-##   0.1764192   1.9557350</code></pre>
+##   0.1458515   2.0127815</code></pre>
 <pre class="r"><code>exp(confint(logbin)) # 95%CI</code></pre>
 <pre><code>## Waiting for profiling to be done...</code></pre>
 <pre><code>##                 2.5 %    97.5 %
-## (Intercept) 0.1550755 0.1992073
-## exposure    1.6760552 2.2884196</code></pre>
-<p>2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> でしたから，普通にできてますね．</p>
+## (Intercept) 0.1262076 0.1670766
+## exposure    1.6928974 2.4010892</code></pre>
+<p>2×2表で得たリスク比は <strong>1.91 [95%CI: 1.60-2.27]</strong> でしたから，普通にできてますね．</p>
 <p>収束の問題が起こるのは，データが十分にない（サンプルサイズ・イベント数など）場合のようです．<a href="https://ete-online.biomedcentral.com/articles/10.1186/1742-7622-10-14">Williamson, et al. 2013</a></p>
 <blockquote>
 <p>Recently there was a paper published in Stroke [4], where in the statistical methods section the authors
@@ -633,21 +575,21 @@ summary(logbin2)</code></pre>
 ##     data = df, start = c(log(mean(df$outcome)), rep(0, 1)))
 ## 
 ## Deviance Residuals: 
-##    Min      1Q  Median      3Q     Max  
-## -0.920  -0.920  -0.623  -0.623   1.863  
+##     Min       1Q   Median       3Q      Max  
+## -0.8337  -0.8337  -0.5615  -0.5615   1.9622  
 ## 
 ## Coefficients:
 ##             Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept) -1.73489    0.06385 -27.170   &lt;2e-16 ***
-## exposure     0.67077    0.07936   8.453   &lt;2e-16 ***
+## (Intercept) -1.92517    0.07152 -26.919  &lt; 2e-16 ***
+## exposure     0.69952    0.08905   7.856 3.97e-15 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 2242.7  on 1999  degrees of freedom
-## Residual deviance: 2168.7  on 1998  degrees of freedom
-## AIC: 2172.7
+##     Null deviance: 2050.5  on 1999  degrees of freedom
+## Residual deviance: 1986.5  on 1998  degrees of freedom
+## AIC: 1990.5
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <p><br/n></p>
