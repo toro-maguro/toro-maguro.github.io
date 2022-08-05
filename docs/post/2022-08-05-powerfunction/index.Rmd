@@ -4,7 +4,7 @@ author: 'toro'
 date: '2022-08-05'
 slug: []
 categories:
-  - Epideiology
+  - Epidemiology
 tags:
   - Epidemiology
   - power

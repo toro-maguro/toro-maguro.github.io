@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Sacoche</title>
-    <link>https://toro-maguro.github.io/post/</link>
-    <description>Recent content in Posts on Sacoche</description>
+    <title>Epidemiology on Sacoche</title>
+    <link>https://toro-maguro.github.io/categories/epidemiology/</link>
+    <description>Recent content in Epidemiology on Sacoche</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 05 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 05 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/epidemiology/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>powerの分布を返す関数、作った</title>
       <link>https://toro-maguro.github.io/post/2022-08-05-powerfunction/</link>

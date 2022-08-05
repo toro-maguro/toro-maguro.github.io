@@ -19,8 +19,6 @@ params:
   addtional_menus:
     - href: /archive/
       title: ARCHIVE
-    - href: /notes/
-      title: NOTES
     - href: /about/
       title: ABOUT
   algolia:

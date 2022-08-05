@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Epideiology on Sacoche</title>
+    <link>https://toro-maguro.github.io/tags/epideiology/</link>
+    <description>Recent content in Epideiology on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 10 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/epideiology/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>RiskRatio vs OddsRatio</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/</link>
+      <pubDate>Mon, 10 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/</guid>
+      <description>はじめに 「稀な疾病の場合、オッズ比はリスク比に近似できる」とは、疫学を勉強した人なら聞いたことがあるはずのフレーズです。 しかし、「稀な疾病」</description>
+    </item>
+    
+  </channel>
+</rss>

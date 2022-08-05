@@ -1,0 +1,395 @@
+---
+title: RiskRatio vs OddsRatio
+author: 'toro'
+date: 2022-01-10
+slug: []
+categories:
+  - Epidemiology
+tags:
+  - Epidemiology
+subtitle: ''
+description: ''
+image: ''
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({
+ tex2jax: {
+ inlineMath: [['$', '$'] ],
+ displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+ }
+ });
+</script>
+<div id="はじめに" class="section level1">
+<h1>はじめに</h1>
+<p>「稀な疾病の場合、オッズ比はリスク比に近似できる」とは、疫学を勉強した人なら聞いたことがあるはずのフレーズです。<br>
+しかし、<strong>「稀な疾病」とはどの程度稀なのでしょうか？</strong></p>
+<p>今回は、リスク比とオッズ比を様々なイベント発生割合で比較します。</p>
+<div id="伝えたいこと" class="section level2">
+<h2>伝えたいこと</h2>
+<p>Risk Ratio (RR) とOdds Ratio (OR) の関係に関して</p>
+<ul>
+<li>RR&gt;1 のとき、イベント発生割合が大きくなるほど（i.e. イベントがcommonになるほど)、ORはRRより大きくなる。</li>
+<li>リスク比・オッズ比が大きくなるほど、リスク比・オッズ比の乖離は大きくなる。</li>
+<li><strong>イベント発生割合が10%が一般的なthreshold。10%を超える場合は、オッズ比ではなくリスク比を使うことを考える。</strong></li>
+</ul>
+<p>→ なんでもかんでも、「2値アウトカムにロジスティック回帰」はダメなんじゃない…?（次回以降）</p>
+<p><br>
+<br></p>
+</div>
+</div>
+<div id="基本の確認" class="section level1">
+<h1>基本の確認</h1>
+<div id="リスク比オッズ比" class="section level2">
+<h2>リスク比・オッズ比</h2>
+<p>コホート研究を通して、次の2×2表が得られたとします (横断研究でオッズ比vs有病率比を考える際も同じ議論です)。</p>
+<p><br></p>
+<table>
+<thead>
+<tr class="header">
+<th align="center"></th>
+<th align="center">イベントあり (人)</th>
+<th align="center">イベントなし (人)</th>
+<th align="center">合計 (人)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>曝露あり</strong></td>
+<td align="center">a</td>
+<td align="center">b</td>
+<td align="center">N</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>曝露なし</strong></td>
+<td align="center">c</td>
+<td align="center">d</td>
+<td align="center">M</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p><strong>リスク比</strong>とは、次の計算式で得られる値です。<br>
+イベントが発生した人の割合を、それぞれの群で計算し、比をとったものとなります。</p>
+<p><span class="math display">\[\mathrm{RiskRatio}=\frac{p_1}{p_2}=\frac{\frac{a}{a+b}}{\frac{c}{c+d}}=\frac{a/N}{c/M}=\frac{aM}{cN}\]</span>
+where</p>
+<p><span class="math display">\[p_1 = \frac{a}{N},~p_2 = \frac{c}{M}\]</span></p>
+<p><br></p>
+<p>一方、<strong>オッズ比</strong>とは、次の計算式で得られる値です。
+イベントのオッズの比ですね。</p>
+<p><span class="math display">\[\mathrm{OddsRatio} = \frac{\frac{p_1}{1-p_1}}{\frac{p_2}{1-p_2}}=\frac{\frac{a}{b}}{\frac{c}{d}}=\frac{ad}{bc}\]</span>
+<br></p>
+</div>
+<div id="稀な疾病の仮定とオッズ比リスク比の導出" class="section level2">
+<h2>「稀な疾病」の仮定と、オッズ比≒リスク比の導出</h2>
+<p>ここで、イベントが稀な場合、オッズ比がリスク比に近似できるという導出を行います。<br>
+稀な疾病の仮定は、英語では”<strong>rare disease assumption</strong>”と言います。（そのままですが、知らないと検索しにくい）</p>
+<p>イベントが稀な場合、2×2表においてa,cがb,dに対して十分小さい、と考えることができます。</p>
+<p><br>
+<br></p>
+<p>「a,cがb,dに対して十分小さい」という仮定から、a/Nやc/Mが1に対して十分小さいと考えると、以下のような計算ができます。</p>
+<p><span class="math display">\[
+\mathrm{OddsRatio} = \frac{ad}{bc} = \frac{a(M-c)}{c(N-a)}=\frac{aM(1-\frac{c}{M})}{cN(1-\frac{a}{N})}\simeq \frac{aM}{cN}=\frac{\frac{a}{N}}{\frac{c}{M}}=\mathrm{RiskRatio}
+\]</span>
+<br>
+<br></p>
+</div>
+</div>
+<div id="稀な疾病とはどの程度稀なのか" class="section level1">
+<h1>「稀な」疾病とは、どの程度稀なのか？</h1>
+<p>集団でのイベント発生割合が稀であると仮定できるとき、オッズ比≒リスク比と考えることができます。<br>
+<strong>しかしながら、稀とはどの程度なのでしょう？<br>
+10%は稀？それとも30%くらいまで稀と言っていいのでしょうか？</strong></p>
+<p>今回はこの疑問に答えていきます。</p>
+<p><br></p>
+<div id="リスク比とオッズ比との関係" class="section level2">
+<h2>リスク比とオッズ比との関係</h2>
+<p>まずはこの図を見てください (この図がとても重要です)。</p>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p><br></p>
+<p>この図は横軸にリスク比、縦軸にオッズ比を取っており、p_overallは集団におけるイベント発生割合を示します。<br>
+見方としては、<strong>グラフ中のグレーの直線 (y=xの直線) に対して近いほど、リスク比とオッズ比との乖離が小さいことを表します</strong>。</p>
+<p>例えば、p_overall=0.5 (1番左側の線) はy=xから大きく乖離している一方、<br>
+p_overall=0.05 は y=x とほぼ同じで、リスク比とオッズ比がほぼ同じ (近似できる) ことを意味しています。<br>
+こう見ると、<strong>イベント発生割合が20%くらいから、リスク比とオッズ比の乖離が目立つことがよくわかりますね！</strong></p>
+<p><br>
+<br></p>
+<p>具体的な値を確認してみましょう。リスク比が1.5の場合、オッズ比は次の値を取ります。</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">集団のイベント発生割合</th>
+<th align="center">リスク比</th>
+<th align="center">オッズ比</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">5%</td>
+<td align="center">1.5</td>
+<td align="center">1.5</td>
+</tr>
+<tr class="even">
+<td align="center">10%</td>
+<td align="center">1.5</td>
+<td align="center">1.6</td>
+</tr>
+<tr class="odd">
+<td align="center">20%</td>
+<td align="center">1.5</td>
+<td align="center">1.7</td>
+</tr>
+<tr class="even">
+<td align="center">30%</td>
+<td align="center">1.5</td>
+<td align="center">1.8</td>
+</tr>
+<tr class="odd">
+<td align="center">50%</td>
+<td align="center">1.5</td>
+<td align="center">2.3</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p>もう1つ例を確認します。リスク比が2.0の場合のオッズ比は次のとおりです。</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">集団のイベント発生割合</th>
+<th align="center">リスク比</th>
+<th align="center">オッズ比</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">5%</td>
+<td align="center">2.0</td>
+<td align="center">2.1</td>
+</tr>
+<tr class="even">
+<td align="center">10%</td>
+<td align="center">2.0</td>
+<td align="center">2.1</td>
+</tr>
+<tr class="odd">
+<td align="center">20%</td>
+<td align="center">2.0</td>
+<td align="center">2.4</td>
+</tr>
+<tr class="even">
+<td align="center">30%</td>
+<td align="center">2.0</td>
+<td align="center">2.7</td>
+</tr>
+<tr class="odd">
+<td align="center">50%</td>
+<td align="center">2.0</td>
+<td align="center">4.0</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p>2つの表を見ると、リスク比が大きいほどリスク比とオッズ比との乖離が大きくなることもわかりました。</p>
+<p>以上から、<strong>イベント発生割合が10%程度なら、通常のリスク比の範囲であればOR≒RRといって問題ないだろう、というように思います。</strong><br>
+イベント発生割合が10%を超え20%, 30%となっているならば、リスク比とオッズ比の乖離具合を考えた方がよいのかなと思います。</p>
+<p><br>
+<br></p>
+</div>
+</div>
+<div id="まとめ" class="section level1">
+<h1>まとめ</h1>
+<p>Risk Ratio (RR) とOdds Ratio (OR) の関係に関して</p>
+<ul>
+<li><strong>RR &gt; 1 のとき、イベント発生割合が大きくなるほど（i.e. イベントがcommonになるほど)、ORはRRより大きくなる。</strong></li>
+<li>リスク比・オッズ比が大きくなるほど、リスク比・オッズ比の乖離は大きくなる。</li>
+<li>一般に、<strong>稀と判断されるのはイベント発生割合が10%以下</strong>の場合である。</li>
+</ul>
+<p><br></p>
+<p>今回の内容を踏まえると、<strong>イベント発生割合によってはロジスティック回帰の使用に慎重になるべき</strong>ことがわかります。</p>
+<p>2値アウトカムの研究に関しては、ロジスティック回帰が多用される傾向にあります。<br>
+しかしながら、イベント発生割合が高いとORがRRよりも大きくなってしまい、近似することが難しくなってしまいます。<br>
+このような場合、効果の指標としてのオッズ比の妥当性が乏しくなってしまい、オッズ比よりもリスク比の方が指標として望ましい、と考えられます。<br>
+(もちろんオッズ比としての議論は可能ですが、リスク比の方が科学的・社会的実用性が高い以上、やはりリスク比と近似できる状況でのオッズ比が望まれるわけです)</p>
+<p>したがって、イベント発生割合が10%を超えるような状況では、<strong>修正ポアソン回帰やlog-binomial回帰などが分析手法の候補</strong>となります。これらについては別の回に紹介しますね。</p>
+<p><br></p>
+<p>今回の記事では、「稀なイベントとはイベント発生割合が10%以下である」を深堀りし、<br>
+リスク比とオッズ比との乖離を確認しました。</p>
+<p>それでは、おつかれさまでした。</p>
+<p><br>
+<br></p>
+</div>
+<div id="付録-グラフの作成方法" class="section level1">
+<h1>付録: グラフの作成方法</h1>
+<p>付録として、今回の議論の仮定および題材作りのコードをシェアします。<br>
+knowledge consumersとしてはややハイレベルな議論かもしれませんが、knowledge creatorsを目指す人はぜひご一読ください。</p>
+<div id="データづくり" class="section level2">
+<h2>データづくり</h2>
+<p>観察集団が曝露群1000人・非曝露群1000人、合計2000人いたとします。<br>
+また、集団全体のイベント発生割合p_overall（観察集団全体のリスク）は次の5通りで進めていきます。</p>
+<ol style="list-style-type: lower-alpha">
+<li>5%</li>
+<li>10%</li>
+<li>20%</li>
+<li>30%</li>
+<li>50%</li>
+</ol>
+<p>2×2表は次のとおりです。</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center"></th>
+<th align="center">イベントあり (人)</th>
+<th align="center">イベントなし (人)</th>
+<th align="center">合計 (人)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>曝露あり</strong></td>
+<td align="center">a</td>
+<td align="center">1000-a</td>
+<td align="center">1000</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>曝露なし</strong></td>
+<td align="center">c</td>
+<td align="center">1000-c</td>
+<td align="center">1000</td>
+</tr>
+</tbody>
+</table>
+<p>ここで、集団全体のイベント発生割合は次の式を満たします。</p>
+<p><span class="math display">\[p_{overall} = \frac{a+c}{2000}\]</span></p>
+<p>よって、<strong>以下の通り変形することができます</strong>。<br></p>
+<p><span class="math display">\[c = 2000\cdot p_{overall}-a\]</span></p>
+<p>したがって今回の2×2表の研究結果は、p_overallが与えられれば、aの関数として表現することができますね。</p>
+<p>リスク比とオッズ比は次の通りです。<br>
+(リスク比とオッズ比がそれぞれaとp_overallの2つの文字で表現できていることを確認してください。p_overallは定数とするので、aの関数となります)</p>
+<p><span class="math display">\[
+\mathrm{RR} = \frac{a/1000}{c/1000} =\frac{a}{c} = \frac{a}{2000p_{overall} - a}
+\]</span></p>
+<p><span class="math display">\[
+\mathrm{OR} = \frac{a\times (1000-c)}{c\times (1000-a)}=\frac{a(1000+a-2000p_{overall})}{(1000-a)(2000p_{overall}-a)}
+\]</span></p>
+<p>ただし、次を満たします。</p>
+<ul>
+<li>aは、1≤a≤999を満たす自然数</li>
+<li>RRは1以上 (RR&lt;1は逆数を取ればよいため)</li>
+<li>ORは1以上</li>
+</ul>
+<p><br></p>
+<p>これをコードとして実装していきましょう。</p>
+<pre class="r"><code>pacman::p_load(tidyverse)
+
+a &lt;- c(1:999)
+d0 &lt;- data.frame(a)
+
+d0 &lt;- d0 %&gt;% 
+  # set overall risk
+  mutate(p1 = 0.05) %&gt;% 
+  mutate(p2 = 0.1) %&gt;% 
+  mutate(p3 = 0.2) %&gt;% 
+  mutate(p4 = 0.3) %&gt;% 
+  mutate(p5 = 0.5)
+
+df &lt;- d0 %&gt;% 
+  pivot_longer(cols = p1:p5,
+               names_to = &quot;p_overall&quot;,
+               values_to = &quot;p&quot;) %&gt;% 
+  mutate(RR = a/(2000*p - a)) %&gt;% 
+  mutate(OR = a*(1000+a-2000*p)/((1000-a)*(2000*p-a)) ) %&gt;% 
+  
+  mutate(p_overall = case_when(
+    p_overall == &quot;p1&quot; ~ &quot;5%&quot;,
+    p_overall == &quot;p2&quot; ~ &quot;10%&quot;,
+    p_overall == &quot;p3&quot; ~ &quot;20%&quot;,
+    p_overall == &quot;p4&quot; ~ &quot;30%&quot;,
+    p_overall == &quot;p5&quot; ~ &quot;50%&quot;
+  ),
+  p_overall = factor(p_overall, levels = c(&quot;5%&quot;, &quot;10%&quot;, &quot;20%&quot;,&quot;30%&quot;, &quot;50%&quot;)))</code></pre>
+<p>現在の段階では、リスク比やオッズ比が負の値や無限大（0割りの結果）となる場合も含まれるので、除外して整理します。<br>
+また、RRやORの範囲が現状だと広すぎるので、上限を5とします。</p>
+<ul>
+<li>1 ≤ RR ≤ 5</li>
+<li>1 ≤ OR ≤ 5</li>
+</ul>
+<pre class="r"><code>df &lt;- df %&gt;% 
+  filter(RR &gt;= 1 &amp; OR &gt;= 1 &amp; RR &lt;= 5 &amp; OR &lt;= 5)</code></pre>
+<p><br></p>
+</div>
+<div id="リスク比-vs-オッズ比のグラフ作り-ggplot2" class="section level2">
+<h2>リスク比 vs オッズ比のグラフ作り (ggplot2)</h2>
+<p>データづくりが完了したので、グラフ化しましょう。（大事なポイントです）</p>
+<pre class="r"><code>plot &lt;- ggplot(data = df, aes(x = RR, y = OR, group = p_overall, colour = p_overall)) + 
+  geom_line(size = 1) + 
+  geom_abline(slope = 1, intercept = 0, alpha = 0.8, colour = &quot;darkgray&quot;) + 
+  geom_point(x = 1, y = 1, colour = &quot;black&quot;) +
+  scale_x_continuous(limits = c(1, 5)) +
+  scale_y_continuous(limits = c(1, 5)) +
+  xlab(&quot;Risk Ratio&quot;) + 
+  ylab(&quot;Odds Ratio&quot;) + 
+  ggtitle(&quot;Risk Ratio vs Odds Ratio&quot;) +
+  
+  annotate(&quot;text&quot;, x = 2.3, y = 5, label = &quot;p[overall] == 0.5&quot;, size = 3, parse = TRUE) + 
+  annotate(&quot;text&quot;, x = 3, y = 5, label = &quot;p[overall] == 0.3&quot;, size = 3, parse = TRUE) + 
+  annotate(&quot;text&quot;, x = 3.7, y = 5, label = &quot;p[overall] == 0.2&quot;, size = 3, parse = TRUE) +
+  annotate(&quot;text&quot;, x = 4.3, y = 5, label = &quot;p[overall] == 0.1&quot;, size = 3, parse = TRUE) + 
+  annotate(&quot;text&quot;, x = 4.8, y = 5, label = &quot;p[overall] == 0.05&quot;, size = 3, parse = TRUE) + 
+  
+  annotate(&quot;text&quot;, x = 1.3, y = 1, label = &quot;RR = OR = 1&quot;, size = 3) + 
+
+  theme_bw()
+
+plot</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code># ggsave(file = &quot;output/RiskRatio_vs_OddsRatio.png&quot;, plot = plot, dpi = 300, width = 7.5, height = 5)</code></pre>
+<p><br></p>
+<p>具体的な値を確認するコードは次のとおりです。</p>
+<p>FYI: <a href="https://teramonagi.hatenablog.com/entry/2021/01/28/212608">与えられた値に対して最も近い値を返す</a> -&gt; 差分の絶対値が最小のものをgroup_byして取ればよい</p>
+<pre class="r"><code>df %&gt;% 
+  filter(round(RR, digits = 2) == 1.5) %&gt;% 
+  group_by(p_overall) %&gt;% 
+  filter(abs(RR-2) == min(abs(RR-2)))</code></pre>
+<pre><code>## # A tibble: 5 × 5
+## # Groups:   p_overall [5]
+##       a p_overall     p    RR    OR
+##   &lt;int&gt; &lt;fct&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1    60 5%         0.05   1.5  1.53
+## 2   120 10%        0.1    1.5  1.57
+## 3   240 20%        0.2    1.5  1.66
+## 4   360 30%        0.3    1.5  1.78
+## 5   600 50%        0.5    1.5  2.25</code></pre>
+<pre class="r"><code>df %&gt;% 
+  filter(round(RR, digits = 1) == 2) %&gt;% 
+  group_by(p_overall) %&gt;% 
+  filter(abs(RR-2) == min(abs(RR-2)))</code></pre>
+<pre><code>## # A tibble: 5 × 5
+## # Groups:   p_overall [5]
+##       a p_overall     p    RR    OR
+##   &lt;int&gt; &lt;fct&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1    67 5%         0.05  2.03  2.10
+## 2   133 10%        0.1   1.99  2.14
+## 3   267 20%        0.2   2.01  2.37
+## 4   400 30%        0.3   2     2.67
+## 5   667 50%        0.5   2.00  4.01</code></pre>
+</div>
+<div id="further-learning" class="section level2">
+<h2>further learning</h2>
+<ul>
+<li>Schmidt, C. O., &amp; Kohlmann, T. (2008). When to use the odds ratio or the relative risk?. International journal of public health, 53(3), 165.<br>
+僕が今回描いたグラフがそのまま載っています。ちゃんと勉強したい人はおすすめ。</li>
+<li>Fuyama, K., Hagiwara, Y. &amp; Matsuyama, Y. A simulation study of regression approaches for estimating risk ratios in the presence of multiple confounders. Emerg Themes Epidemiol 18, 18 (2021). <br>
+学部同期の論文 (ほんとすげえ) 。勉強したあとに読むと、非常に面白かったです。</li>
+</ul>
+<p><br></p>
+<p>最後まで読んでくださった方、本当におつかれさまでした。</p>
+<p><br>
+<br></p>
+</div>
+</div>

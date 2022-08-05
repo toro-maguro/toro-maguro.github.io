@@ -16,5 +16,14 @@
       <description>powerの分布を考えてみよう 真の値がわかっている場合の、powerの分布 NOTE: これはあくまで真の値を知っているときの話であって、標本値の話では</description>
     </item>
     
+    <item>
+      <title>RiskRatio vs OddsRatio</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/</link>
+      <pubDate>Mon, 10 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/</guid>
+      <description>はじめに 「稀な疾病の場合、オッズ比はリスク比に近似できる」とは、疫学を勉強した人なら聞いたことがあるはずのフレーズです。 しかし、「稀な疾病」</description>
+    </item>
+    
   </channel>
 </rss>

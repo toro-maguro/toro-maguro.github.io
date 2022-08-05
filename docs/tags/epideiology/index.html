@@ -15,9 +15,9 @@
     
 
     
-    <meta name="title" content="powerの分布を返す関数、作った" />
-    <meta property="og:title" content="powerの分布を返す関数、作った" />
-    <meta property="twitter:title" content="powerの分布を返す関数、作った" />
+    <meta name="title" content="Epideiology" />
+    <meta property="og:title" content="Epideiology" />
+    <meta property="twitter:title" content="Epideiology" />
     
 
     
@@ -34,9 +34,9 @@
     <meta name="keyword"  content="Epidemiology, IT, cloud">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>powerの分布を返す関数、作った | Sacoche</title>
+    <title>Epideiology | Sacoche</title>
 
-    <link rel="canonical" href="/post/2022-08-05-powerfunction/">
+    <link rel="canonical" href="/tags/epideiology/">
 
     
     
@@ -97,6 +97,10 @@
                     
                         
                         <li>
+                            <a href="/categories/epideiology">epideiology</a>
+                        </li>
+                        
+                        <li>
                             <a href="/categories/epidemiology">epidemiology</a>
                         </li>
                         
@@ -151,45 +155,14 @@
 
 
 
-
-<style type="text/css">
-    header.intro-header {
-        background-image: url('/img/home-bg-jeep.jpg')
-    }
-</style>
-
-<header class="intro-header" >
-
+<header class="intro-header" style="background-image: url('/img/home-bg-jeep.jpg')">
     <div class="container">
         <div class="row">
-            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-                <div class="post-heading">
-                    <div class="tags">
-                        
-                        <a class="tag" href="/tags/epidemiology" title="Epidemiology">
-                            Epidemiology
-                        </a>
-                        
-                        <a class="tag" href="/tags/power" title="power">
-                            power
-                        </a>
-                        
-                    </div>
-                    <h1>powerの分布を返す関数、作った</h1>
-                    <h2 class="subheading"></h2>
-                    <span class="meta">
-                        
-                            Posted by 
-                            
-                                toro
-                             
-                            on 
-                            Friday, August 5, 2022
-                            
-                            
-                            
-                            
-                    </span>
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 ">
+                <div class="site-heading">
+                    <h1>Sacoche </h1>
+                    
+		    <span class="subheading">Make everything scalable and visible</span>
                 </div>
             </div>
         </div>
@@ -198,153 +171,126 @@
 
 
 
-
-<article>
-    <div class="container">
-        <div class="row">
-
-            
-            <div class="
-                col-lg-8 col-lg-offset-2
-                col-md-10 col-md-offset-1
-                post-container">
-
-                
-                
-<script src="https://toro-maguro.github.io/post/2022-08-05-powerfunction/index_files/header-attrs/header-attrs.js"></script>
-
-
-<div id="powerの分布を考えてみよう" class="section level1">
-<h1>powerの分布を考えてみよう</h1>
-<p>真の値がわかっている場合の、powerの分布</p>
-<p>NOTE: これはあくまで真の値を知っているときの話であって、標本値の話ではない</p>
-<pre class="r"><code>pacman::p_load(pwr, tidyverse)
-
-PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.25, rr_max=3.0){
   
-  # あるリスク比を定めると、powerを返す関数
-  GetPower_byRR&lt;- function(risk_ratio){
-    res &lt;- pwr.2p2n.test(h = ES.h(p1 = p_event_control, p2 = p_event_control*risk_ratio),
-                         n1 = n_control, 
-                         n2 = n_exposed,
-                         sig.level = 0.05,
-                         alternative = &quot;two.sided&quot;)
-    power &lt;- res[[&quot;power&quot;]]
-    return(power)
-    }
-  
-  # イベント発生人数がN of participantsを超えるとエラーになるので、先に宣言しておく
-  rr_max &lt;- ifelse(p_event_control*rr_max &gt;= 1, 1/p_event_control, rr_max) 
-  
-  scale_riskratio &lt;- seq(from=rr_min, to=rr_max, by=0.01)
-  estimate_power &lt;- sapply(scale_riskratio, GetPower_byRR)
-  
-  df &lt;- data.frame(risk_ratio = scale_riskratio, power = estimate_power)
-  # RR &lt; 1 でpower &gt;= 0.8となる、1に近い (最大の) RRを得る
-  df_rr1 &lt;- df %&gt;% 
-    filter(risk_ratio &lt; 1 &amp; power &gt;= 0.8) %&gt;% 
-    arrange(power) # powerで昇順ソート
-  power_080_1 &lt;- max(df_rr1$risk_ratio)
-
-  # RR &gt; 1 でpower &gt;= 0.8となる、1に近い (最小の) RRを得る
-  df_rr2 &lt;- df %&gt;% 
-    filter(risk_ratio &gt; 1 &amp; power &gt;= 0.80) %&gt;% 
-    arrange(power) # powerで昇順ソート
-  power_080_2 &lt;- min(df_rr2$risk_ratio)
-  
-  # description
-  cha1 &lt;- sprintf(&quot;number of participants: control group=%d&quot;, n_control)
-  cha2 &lt;- sprintf(&quot;, exposure group=%d\n&quot;, n_exposed)
-  cha3 &lt;- sprintf(&quot;true value of event probability in control group=%.2f&quot;, p_event_control)
-  cha4 &lt;- sprintf(&quot;blue hashed line: the maximum value of risk ratio (within RR &lt;1) that achieved power ≥ 0.8=%.2f&quot;, power_080_1)
-  cha5 &lt;- sprintf(&quot;\norange hashed line: the minimum value of risk ratio (within RR&gt;1) that achieved power ≥ 0.8=%.2f&quot;, power_080_2)
-  
-  subtitle = paste0(cha1, cha2, cha3)
-  caption = paste0(cha4, cha5)
-  
-  # plot
-  plot &lt;- ggplot(data = df, aes(x = risk_ratio, y = power)) + 
-    geom_line() +
-    geom_vline(xintercept = 1, colour = &quot;darkgray&quot;) + 
-    geom_vline(xintercept = power_080_1, linetype = 2, colour = &quot;blue&quot;, alpha=0.8) + 
-    geom_vline(xintercept = power_080_2, linetype = 2, colour = &quot;orange&quot;, alpha=0.8) + 
-    geom_hline(yintercept = 0.8, colour = &quot;navy&quot;, alpha = 0.5) + 
-    scale_y_continuous(breaks = seq(0, 1, 0.2)) + 
-    labs(title = &quot;Relationship between risk ratio and power in binary-outcome studies&quot;,
-        subtitle = subtitle,
-        caption = caption) +
-    xlab(&quot;risk ratio of exposed group compared to control group&quot;) +
-    theme_bw() 
-  return(plot)
-}</code></pre>
-</div>
-<div id="関数の説明" class="section level1">
-<h1>関数の説明</h1>
-<p>引数は次の通り</p>
-<ul>
-<li>n_control: コントロール群の人数</li>
-<li>n_exposed: 曝露群の人数</li>
-<li>p_event_control: コントロール群でのイベント発生割合</li>
-</ul>
-<p>これらを入力すると、曝露のリスク比(横軸)に対するpower(縦軸)を返します。</p>
-<pre class="r"><code>PlotPower_byRR(n_control = 114, n_exposed = 46, p_event_control = 0.5)</code></pre>
-<p><img src="https://toro-maguro.github.io/post/2022-08-05-powerfunction/index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-</div>
-
-
-                
-
-                
-                <hr>
-                <ul class="pager">
-                    
-                    <li class="previous">
-                        <a href="/post/2022-08-05-riskratio-vs-oddsratio/" data-toggle="tooltip" data-placement="top" title="RiskRatio vs OddsRatio">&larr;
-                            Previous Post</a>
-                    </li>
-                    
-                    
-                </ul>
-                
-
-                
-
-
-
-            </div>
-
-            
-            
-            <div class="
-                col-lg-2 col-lg-offset-0
-                visible-lg-block
-                sidebar-container
-                catalog-container">
-                <div class="side-catalog">
-                    <hr class="hidden-sm hidden-xs">
-                    <h5>
-                        <a class="catalog-toggle" href="#">CATALOG</a>
-                    </h5>
-                    <ul class="catalog-body"></ul>
-                </div>
-            </div>
+<div class="container">
+    <div class="row">
+        
+        
+   	    <div class="
+            col-lg-8 col-lg-offset-1
+            col-md-8 col-md-offset-1
+            col-sm-12
+            col-xs-12
+            post-container
+        ">
             
 
-            
-            <div class="
-                col-lg-8 col-lg-offset-2
-                col-md-10 col-md-offset-1
-                sidebar-container">
-
-                
-                
-
-                
-                
-            </div>
+<div class="post-preview">
+    <a href="https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/">
+        <h2 class="post-title">
+            RiskRatio vs OddsRatio
+        </h2>
+	
+        <div class="post-content-preview">
+	
+            はじめに 「稀な疾病の場合、オッズ比はリスク比に近似できる」とは、疫学を勉強した人なら聞いたことがあるはずのフレーズです。 しかし、「稀な疾病」
+       
         </div>
-    </div>
-</article>
+    </a>
+    <p class="post-meta">
+    
+        Posted by toro on Monday, January 10, 2022
+        
+        
+    
+    </p>
+
+</div>
+<hr>
+
+
+            
+
+
+
+       	</div>
+        
+
+<div class="
+    col-lg-3 col-lg-offset-0
+    col-md-3 col-md-offset-0
+    col-sm-12
+    col-xs-12
+    sidebar-container
+">
+    
+	
+    <section class="visible-md visible-lg">
+	
+        <div class="short-about">
+            
+            <a href="/top/about">
+               <img src="/img/zhaohuabing.png" alt="avatar" style="cursor: pointer" />
+            </a>
+            
+            
+                <p>Master of Public Health / Data analysit / data infrastructure enginner | Be a knowledge craator</p>
+            
+           
+           <ul class="list-inline">
+               
+               <li>
+                   <a href="mailto:youremail@gmail.com">
+                      <span class="fa-stack fa-lg">
+                          <i class="fa fa-circle fa-stack-2x"></i>
+                          <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                      </span>
+                   </a>
+               </li>
+               
+               
+               
+               
+               
+               
+               
+               <li>
+                   <a target="_blank" href="https://github.com/toro-maguro/toro-maguro.github.io">
+                       <span class="fa-stack fa-lg">
+                           <i class="fas fa-circle fa-stack-2x"></i>
+                           <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                       </span>
+                   </a>
+               </li>
+               
+               
+               
+               
+               
+               
+            
+            
+               
+               
+               
+               
+                </ul>
+            </div>
+    </section>
+	
+    
+    
+    
+    
+
+    
+    
+    
+</div>
+
+	</div>
+</div>
+
 
 
 
@@ -395,7 +341,7 @@ PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.
             
            
                    <li>
-                       <a href='' rel="alternate" type="application/rss+xml" title="Sacoche" >
+                       <a href='/tags/epideiology/index.xml' rel="alternate" type="application/rss+xml" title="Sacoche" >
                            <span class="fa-stack fa-lg">
                                <i class="fas fa-circle fa-stack-2x"></i>
                                <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
