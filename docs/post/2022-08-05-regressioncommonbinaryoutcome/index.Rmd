@@ -1,0 +1,374 @@
+---
+title: 稀でない2値イベントに対する回帰モデル
+author: ''
+date: '2022-01-20'
+slug: []
+categories:
+  - Epidemiology
+tags:
+  - Epidemiology
+subtitle: ''
+description: ''
+image: ''
+---
+
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({
+ tex2jax: {
+ inlineMath: [['$', '$'] ],
+ displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+ }
+ });
+</script>
+
+# はじめに
+
+* Question: **研究参加者の約50％で発生しているbinaryのイベントをモデリングしたい．どんな手法を使えばよいだろうか？**
+* 問題意識: 思考停止の「ロジスティック回帰」はまずいかもしれない．オッズ比とリスク比の乖離が起こりうる．
+
+共著の論文でこうした問題に出会ったので，そこでの勉強内容をシェアします．(要は[前回](https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/)の続き)
+
+(2022/8/5追記: 関数を使わない書き方をしているので、大変可読性が低いですね、、、そのうち修正するかもです)
+
+
+## まとめると...
+
+* リスク比が1より大きく，2値のイベントの発生割合が大きい場合，**オッズ比はリスク比よりも大きくなる** 
+* オッズ比よりもリスク比の方が疫学的な関心が高いので，オッズ比とリスク比の乖離は問題となる．したがって，**イベントが多い状況でロジスティック回帰を用いることは，慎重に考えるべき**．
+* **修正ポアソン回帰とlog-binomial regression (対数二項回帰)** が代替候補．
+
+<br/n>
+
+リスク比とオッズ比が乖離する様子を細かく知りたい方は，まずこちらをお読みください．<br/>
+[稀でないイベントにおけるリスク比とオッズ比](https://ibwfmsi3nfyrzdmiayqzbw-on.drv.tw/share_akiyama/R_tips/RiskRatio_OddsRatio.html)
+
+
+# 準備
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+
+library(epiR)
+library(epitools)
+```
+
+## データ作り
+
+自由にデータを操作できるように，このセクションで2×2表のデータを作っていきます．
+
+デフォルトの設定は以下の通りです．
+
+* N: 1000人
+* イベント発生割合: 50%
+* 曝露群の割合: 25%
+* 曝露のリスク比: 1.5倍
+
+```{r}
+# ここで自由に設定してください
+
+n <- 2000 # Number of participants
+p_event <- 0.3 # event prevalence
+p_exposure <- 0.5 # proportion of exposure group
+rr_exposure <- 2 # risk ratio of exposure
+rr_sex <- 0.6 # risk ratio of sex
+```
+
+
+```{r}
+set.seed(1)
+baseline_risk <- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
+
+ID <- c(1:n)
+sex <- c(rep(0, n*0.6), rep(1, n*0.4))
+df <- data.frame(ID = ID, sex = sex)
+
+df <- df %>% 
+  mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %>% 
+  mutate(risk = case_when(
+    exposure == 0 & sex == 0 ~ baseline_risk,
+    exposure == 0 & sex == 1 ~ baseline_risk*rr_sex,
+    exposure == 1 & sex == 0 ~ baseline_risk*rr_exposure,
+    exposure == 1 & sex == 1 ~ baseline_risk*rr_exposure*rr_sex
+  )) %>% 
+  mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
+
+table(df$outcome)
+```
+
+## データのチェック
+
+データを確認してください．思い通りのデータができあがっていると思います．
+
+```{r}
+tab <- xtabs(~ exposure + outcome + sex, data = df)
+
+# epi.2by2で扱えるように変換...このあたり，詳しく知らないのでコードが汚い
+men <- matrix(c(tab[2,2,1], tab[2,1,1], tab[1,2,1], tab[1,1,1]),
+              nrow = 2, byrow = TRUE)
+women <- matrix(c(tab[2,2,2], tab[2,1,2], tab[1,2,2], tab[1,1,2]),
+              nrow = 2, byrow = TRUE)
+dat <- array(c(men, women), dim = c(2,2,2))
+epi.2by2(dat, method = "cross.sectional")
+tab
+```
+
+
+デフォルトの設定だと，効果の指標は次のとおりです．
+
+* **リスク比: 1.56 [95%CI: 1.39-1.74]**
+* **オッズ比: 2.89 [95%CI: 2.12-3.93]**
+
+**リスク比とオッズ比との乖離が結構大きい**ですね．<br/n>
+「もしp_eventが小さかったら？」というのもぜひ試してみてください．
+
+# Odds ratio vs Risk ratio
+
+[こちらのブログ](http://torutsuboya.blogspot.com/2016/03/orrr.html)の指摘はなかなか的を射ていると感じます．
+
+> prevalenceが10％を超えると、ORが「X倍」に近似できないのはその通りだと思うが、ORはORのままで議論すればよい（例：ORが2倍でした、などと記述すればよい）気がしていた。
+> relative riskの議論に持ち込まなければORで議論しても問題ない気がするが、それで議論を進めて何かまずいものでしょうか。
+
+しかしながら，**疫学の流れを考えればrisk differenceやrisk ratioが根本にあり，odds ratioは代替的に使うものと考えることが自然でしょう**．したがって，**ORがrisk ratioを大きく超える (exaggerate) 状況なのであれば，効果や関連の指標としてORを使うことはあまり望ましくないと考えられます**．<br/n>
+(i.e. イベントの発生が稀でない，など)
+
+ということで，可能ならオッズ比ではなくリスク比を評価していきたい，ということが今後の流れです．
+
+<br/n>
+<br/n>
+
+
+# 回帰分析による推定
+
+さきほどの2×2表での計算で分析が済むなら楽なのですが，実際の研究ではたくさんの共変量を調整していくことになります．
+
+そこで今回は，どのような回帰分析手法を使えばよいのか？という課題に向き合っていきます．
+
+## ロジスティック回帰
+
+はじめに，頻繁に使われているなロジスティック回帰について．
+
+これはオッズ比を導くので，今回の状況ではあまり望ましくない分析手法となります．
+
+```{r}
+logistic <- glm(outcome ~ exposure, data = df, family = binomial(link = "logit"))
+summary(logistic)
+
+exp(coef(logistic)) # OR
+exp(confint(logistic)) # 95%CI
+```
+
+ちなみに，オッズからリスクを推定することも可能なのですが，信頼区間をうまく得ることができません．<br/n>
+参考: [Wikipedia](https://ja.wikipedia.org/wiki/ロジスティック回帰)
+
+```{r}
+p1 <- 1/(1+exp(0.1867)) # probability at non-exposed group
+p2 <- 1/(1+exp(0.1867-1.061)) # probability at exposed group
+
+p2/p1 # risk ratio, 先ほどの2×2表と概ね一致
+```
+
+
+## ポアソン回帰
+
+一般に，ポアソン回帰は0以上の整数値を取るデータに対して適用される回帰モデルで，特に「稀なイベント」に使われています．
+例えば，交差点での交通事故発生件数や製品製造ラインでの故障品などが代表的でしょうか．
+また，故障品のモデリングなど「全体でいくつ作っているか」も重要になる場合は，
+**オフセット項**を導入することで，割合もモデリングすることが可能になります．
+
+[J-Stageの解説論文](https://www.jstage.jst.go.jp/article/weed/55/4/55_4_287/_pdf)
+
+<br/n>
+
+また，ポアソン回帰は**0/1のbinary outcomeに対しても適用することができます**．<br/n>
+イメージする上では，[Petersen, et al. 2008](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/1471-2288-8-9)のフレーズがわかりやすいように感じます．
+
+> It is well known that when the prevalence is low and the sample size is large, probabilities from the Poisson distribution can often be used to approximate probabilities from the binomial distribution. Similarly, **one can think of an existing sample of binomial data (0 or 1) as being approximately Poisson, where the probability of a value of 2 or greater is low enough that no values greater than 1 occurred in the obtained sample**.
+
+もし，ポアソン回帰をbinary outcomeに対して用いる場合は，[Zou, 2004](https://pubmed.ncbi.nlm.nih.gov/15033648/)を引用しましょう．
+鉄板論文のようです．
+
+それでは，実際にすすめていきます．
+
+```{r}
+poisson <- glm(outcome ~ exposure, data = df, family = poisson(link = "log"))
+summary(poisson)
+
+exp(coef(poisson)) # risk ratio
+exp(confint(poisson)) # 95%CI, basic poisson regression
+```
+
+ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，**RR = 1.56 [95%CI: 1.29-1.86]** となりました．<br/n>
+一方，2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** と，**ポアソン回帰の信頼区間の幅が広くなっています**．
+
+ここが，Zou (2004) の言うところの "**On the other hand, use of Poisson regression tends to provide conservative results**" 
+にあたるのでしょう．
+
+<br/n>
+
+そこで，Zouの手法による修正ポアソン回帰の分散計算を実行します．<br/n>
+参考1: [Zou’s Modified Poisson Regression](https://charliemarks.com/r-tutorials/modifiedpoissonregression), 
+参考2: [いろいろ情報盛りだくさん](https://rpubs.com/kaz_yos/ku-r3)
+
+
+```{r, warning=FALSE, message=FALSE}
+library(lmtest)
+library(sandwich)
+
+modified_poiss <- coeftest(poisson, vcov = sandwich)
+```
+
+### ポアソン回帰の比較
+
+係数は同じですね．一方，標準誤差は随分違います．修正ポアソン回帰の方が，小さな標準誤差を得ることに成功しました．
+
+```{r}
+modified_poiss # 修正ポアソン回帰
+summary(poisson) # (再掲) 通常のポアソン回帰
+```
+
+では，修正ポアソン回帰に基づく信頼区間を計算します．<br/n>
+面倒なことに，自分で計算をしなくてはならないようです．
+
+```{r}
+modpoiss_results <- round(cbind(exp(cbind(RR = modified_poiss[,1], 
+                                          LCI = modified_poiss[,1] + qnorm(0.05/2)*modified_poiss[,2],
+                                          UCI = modified_poiss[,1] - qnorm(0.05/2)*modified_poiss[,2])),
+                                          P = modified_poiss[,4]),4)
+
+modpoiss_results
+```
+
+2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** ですから，**2×2表と修正ポアソン回帰との信頼区間の幅が一致しました！**．
+
+<br/n>
+<br/n>
+
+## log-binomial
+
+log binomialの回帰について，勉強することは初めてのことです．そこで，モデルの式も含めて記していきます．
+
+### モデル式
+
+GLM族なので，a) 線形予測子，b) リンク関数，c) 確率分布の3つで記述することができます．<br/n>
+やっていきましょう．
+
+log-binomial regressionのモデルは以下の通りです（説明変数が2つとします）．<br/n>
+参考: [Chen, et al. 2018](https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0519-5)
+
+$$\log{(p_i)} = b_0 +b_1x_{i1}+b_2x_{i2} $$
+$$y_i \sim Binomial(n, p_i)$$
+
+ただ，今回は個人が集計単位でy_iは0/1のみがアウトカムなので，n=1となります．<br/n>
+(二項分布なので，コイン投げを1回するイメージですね)
+
+<br/n>
+
+### なぜ"log"?
+
+ロジスティック回帰はとても良くできたモデルだと思います．
+
+* 解釈が比較的簡単
+* 確率のシグモイド的な振る舞いを考えることができる（「ある閾値を超えるとイベントが起こる」といった考え方）
+* 0≤p≤1の確率pに対し，0≤ p/(1-p) <∞であり，log(p/(1-p))は負の無限大から無限大を取るので，被説明変数として適切
+
+<br/n>
+
+そんな中log-binomialモデルでは，なぜlog(p)を考えるのでしょうか？<br/n>
+オッズではなく確率をモデルできることは強みです．<br/n>
+ただし，**0≤p≤1の確率pに対し，log(p)は負の無限大から0を取るので，実数全体を取りうるわけではありません**．ここがどうにも妙なところです．
+
+この妙な点は，収束が難しいことも引き起こしてしまうようです．
+
+>  However, the Log link function in Log-Binomial models restricts the probabilities of an outcome to be greater than or equal to zero, that is, to fall within the bounds [0, ∞). Due to this mismatch between the bounds of the model and the allowable outcome, in practice, the Log-Binomial model will routinely fail to converge and will not provide the parameter estimates (Localio et al. 2007).
+
+(from: [SAS](https://support.sas.com/resources/papers/proceedings11/345-2011.pdf))
+
+
+なんだか難しそうですが，とりあえずやってみましょう．
+
+### log-binomial regの実践
+
+```{r}
+logbin <- glm(outcome ~ exposure, data = df, family = binomial(link = "log"))
+
+summary(logbin)
+
+exp(coef(logbin)) # risk ratio
+exp(confint(logbin)) # 95%CI
+```
+
+
+2×2表で得たリスク比は **1.56 [95%CI: 1.39-1.74]** でしたから，普通にできてますね．
+
+収束の問題が起こるのは，データが十分にない（サンプルサイズ・イベント数など）場合のようです．[Williamson, et al. 2013](https://ete-online.biomedcentral.com/articles/10.1186/1742-7622-10-14)
+
+> Recently there was a paper published in Stroke [4], where in the statistical methods section the authors
+indicated that: “As a first approach to the multivariable analysis, we used a log-binomial model, but
+owing to the sparseness of data, this failed to converge.
+
+デフォルトの設定では，大きな問題にはなりませんでした．
+
+<br/n>
+
+
+#### トラブルシューティング
+
+もし，以下のようなエラーで最尤推定の際の初期値を求められた場合，glm中のstartを設定することで前進できる可能性があります．
+
+* Error: cannot find valid starting values: please specify some
+* エラー: 係数の有効なセットが見出されませんでした: 初期値を与えてください
+
+[参考1, 対応について](https://stats.stackexchange.com/questions/105633/what-to-do-when-a-log-binomial-models-convergence-fails), 
+[参考2, 考え方について](https://stats.stackexchange.com/questions/62460/what-are-starting-values-in-glm-function)
+
+<br/n>
+
+考え方としては，「切片をlog(mean(y)), それ以外の係数を0にしよう！」ということです．構造モデルを考えれば，帰無仮説下H0の状況での考えを初期値としている，というイメージがつかめると思います．もちろん，「x_iが0のとき」という意味合いを考えて，適宜調整してくださいね．
+
+$$\log{(p_i)} = b_0 +b_1x_{i1}+b_2x_{i2} $$
+
+<br/n>
+
+なお，上で紹介した参考1で述べられているコードには誤りがあります．<br/n>
+startの引数として，"start=c(log(mean(y), rep(0, np-1))" とありますが，
+"start = c(log(mean(y)), rep(0, np-1))"としましょう．<br/n>
+log(0)は負の無限大となってしまい，定義できないからです．（単純なミスでしょう）
+
+<br/n>
+
+先ほど実践したlog-binomial modelにstartの引数を指定すると，こんな形になります．<br/n>
+rep(0, np-1)のnpは切片を含む説明変数の数とありますが，factor型の説明変数を投入している場合は水準の数だけ増えてしまうことにも注意してください．
+
+```{r}
+# startの引数設定
+logbin2 <- glm(outcome ~ exposure, data = df, family = binomial(link = "log"),
+               start = c(log(mean(df$outcome)), rep(0, 1))) # 説明変数が切片と1つの因子なので，rep(0, 1)となる
+
+summary(logbin2)
+```
+
+
+<br/n>
+
+# まとめ
+
+* 2値のイベントの発生割合が大きい場合，オッズ比はリスク比よりも大きくなる (away from nullの程度が大きくなる)
+* オッズ比よりもリスク比の方が疫学的な関心が高いので，オッズ比とリスク比の乖離は問題となる．したがって，イベントが多い状況でロジスティック回帰を用いることは，慎重に考えるべき．
+* 修正ポアソン回帰とlog-binomial regression (対数二項回帰) が代替候補．
+
+
+<br/n>
+<br/n>
+<br/n>
+
+
+# 参考文献
+
+* Zou, G. (2004). A modified poisson regression approach to prospective studies with binary data. American journal of epidemiology, 159(7), 702-706.
+* Petersen, M. R., & Deddens, J. A. (2008). A comparison of two methods for estimating prevalence ratios. BMC medical research methodology, 8(1), 1-9.
+* Chen, W., Qian, L., Shi, J., & Franklin, M. (2018). Comparing performance between log-binomial and robust Poisson regression models for estimating risk ratios under model misspecification. BMC medical research methodology, 18(1), 1-12.
+* Williamson, T., Eliasziw, M., & Fick, G. H. (2013). Log-binomial models: exploring failed convergence. Emerging themes in epidemiology, 10(1), 1-10.
+

@@ -1,0 +1,478 @@
+---
+title: 稀でない2値イベントに対する回帰モデル
+author: ''
+date: '2022-01-20'
+slug: []
+categories:
+  - Epidemiology
+tags:
+  - Epidemiology
+subtitle: ''
+description: ''
+image: ''
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({
+ tex2jax: {
+ inlineMath: [['$', '$'] ],
+ displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+ }
+ });
+</script>
+<div id="はじめに" class="section level1">
+<h1>はじめに</h1>
+<ul>
+<li>Question: <strong>研究参加者の約50％で発生しているbinaryのイベントをモデリングしたい．どんな手法を使えばよいだろうか？</strong></li>
+<li>問題意識: 思考停止の「ロジスティック回帰」はまずいかもしれない．オッズ比とリスク比の乖離が起こりうる．</li>
+</ul>
+<p>共著の論文でこうした問題に出会ったので，そこでの勉強内容をシェアします．(要は<a href="https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/">前回</a>の続き)</p>
+<p>(2022/8/5追記: 関数を使わない書き方をしているので、大変可読性が低いですね、、、そのうち修正するかもです)</p>
+<div id="まとめると" class="section level2">
+<h2>まとめると…</h2>
+<ul>
+<li>リスク比が1より大きく，2値のイベントの発生割合が大きい場合，<strong>オッズ比はリスク比よりも大きくなる</strong></li>
+<li>オッズ比よりもリスク比の方が疫学的な関心が高いので，オッズ比とリスク比の乖離は問題となる．したがって，<strong>イベントが多い状況でロジスティック回帰を用いることは，慎重に考えるべき</strong>．</li>
+<li><strong>修正ポアソン回帰とlog-binomial regression (対数二項回帰)</strong> が代替候補．</li>
+</ul>
+<p><br/n></p>
+<p>リスク比とオッズ比が乖離する様子を細かく知りたい方は，まずこちらをお読みください．<br/>
+<a href="https://ibwfmsi3nfyrzdmiayqzbw-on.drv.tw/share_akiyama/R_tips/RiskRatio_OddsRatio.html">稀でないイベントにおけるリスク比とオッズ比</a></p>
+</div>
+</div>
+<div id="準備" class="section level1">
+<h1>準備</h1>
+<pre class="r"><code>library(tidyverse)
+library(dplyr)
+
+library(epiR)
+library(epitools)</code></pre>
+<div id="データ作り" class="section level2">
+<h2>データ作り</h2>
+<p>自由にデータを操作できるように，このセクションで2×2表のデータを作っていきます．</p>
+<p>デフォルトの設定は以下の通りです．</p>
+<ul>
+<li>N: 1000人</li>
+<li>イベント発生割合: 50%</li>
+<li>曝露群の割合: 25%</li>
+<li>曝露のリスク比: 1.5倍</li>
+</ul>
+<pre class="r"><code># ここで自由に設定してください
+
+n &lt;- 2000 # Number of participants
+p_event &lt;- 0.3 # event prevalence
+p_exposure &lt;- 0.5 # proportion of exposure group
+rr_exposure &lt;- 2 # risk ratio of exposure
+rr_sex &lt;- 0.6 # risk ratio of sex</code></pre>
+<pre class="r"><code>set.seed(1)
+baseline_risk &lt;- n*p_event / (n*(1-p_exposure)+n*p_exposure*rr_exposure) # risk at non-exposed group
+
+ID &lt;- c(1:n)
+sex &lt;- c(rep(0, n*0.6), rep(1, n*0.4))
+df &lt;- data.frame(ID = ID, sex = sex)
+
+df &lt;- df %&gt;% 
+  mutate(exposure = rbinom(n = nrow(df), size = 1, prob = p_exposure-sex*0.15)) %&gt;% 
+  mutate(risk = case_when(
+    exposure == 0 &amp; sex == 0 ~ baseline_risk,
+    exposure == 0 &amp; sex == 1 ~ baseline_risk*rr_sex,
+    exposure == 1 &amp; sex == 0 ~ baseline_risk*rr_exposure,
+    exposure == 1 &amp; sex == 1 ~ baseline_risk*rr_exposure*rr_sex
+  )) %&gt;% 
+  mutate(outcome = rbinom(n = nrow(df), size = 1, prob = risk))
+
+table(df$outcome)</code></pre>
+<pre><code>## 
+##    0    1 
+## 1503  497</code></pre>
+</div>
+<div id="データのチェック" class="section level2">
+<h2>データのチェック</h2>
+<p>データを確認してください．思い通りのデータができあがっていると思います．</p>
+<pre class="r"><code>tab &lt;- xtabs(~ exposure + outcome + sex, data = df)
+
+# epi.2by2で扱えるように変換...このあたり，詳しく知らないのでコードが汚い
+men &lt;- matrix(c(tab[2,2,1], tab[2,1,1], tab[1,2,1], tab[1,1,1]),
+              nrow = 2, byrow = TRUE)
+women &lt;- matrix(c(tab[2,2,2], tab[2,1,2], tab[1,2,2], tab[1,1,2]),
+              nrow = 2, byrow = TRUE)
+dat &lt;- array(c(men, women), dim = c(2,2,2))
+epi.2by2(dat, method = &quot;cross.sectional&quot;)</code></pre>
+<pre><code>##              Outcome +    Outcome -      Total        Prevalence *        Odds
+## Exposed +          295          560        855                34.5       0.527
+## Exposed -          202          943       1145                17.6       0.214
+## Total              497         1503       2000                24.9       0.331
+## 
+## Point estimates and 95% CIs:
+## -------------------------------------------------------------------
+## Prevalence ratio (crude)                       1.96 (1.67, 2.28)
+## Prevalence ratio (M-H)                         1.86 (1.59, 2.17)
+## Inc risk ratio (crude:M-H)                     1.05
+## Odds ratio (crude)                             2.46 (2.00, 3.03)
+## Odds ratio (M-H)                               2.32 (1.89, 2.87)
+## Odds ratio (crude:M-H)                         1.06
+## Atributable prevalence in the exposed (crude) *16.86 (12.98, 20.74)
+## Atributable prevalence in the exposed (M-H) *  15.67 (11.17, 20.17)
+## Atributable prevalence (crude:M-H)             1.08
+## -------------------------------------------------------------------
+##  Woolf test of homogeneity of PRs: chi2(1) = 0.569 Pr&gt;chi2 = 0.451
+##  Woolf test of homogeneity of ORs: chi2(1) = 0.067 Pr&gt;chi2 = 0.795
+##  Test that M-H adjusted OR = 1:  chi2(1) = 64.030 Pr&gt;chi2 = &lt;0.001
+##  Wald confidence limits
+##  M-H: Mantel-Haenszel; CI: confidence interval
+##  * Outcomes per 100 population units</code></pre>
+<pre class="r"><code>tab</code></pre>
+<pre><code>## , , sex = 0
+## 
+##         outcome
+## exposure   0   1
+##        0 493 135
+##        1 352 220
+## 
+## , , sex = 1
+## 
+##         outcome
+## exposure   0   1
+##        0 450  67
+##        1 208  75</code></pre>
+<p>デフォルトの設定だと，効果の指標は次のとおりです．</p>
+<ul>
+<li><strong>リスク比: 1.56 [95%CI: 1.39-1.74]</strong></li>
+<li><strong>オッズ比: 2.89 [95%CI: 2.12-3.93]</strong></li>
+</ul>
+<p><strong>リスク比とオッズ比との乖離が結構大きい</strong>ですね．<br/n>
+「もしp_eventが小さかったら？」というのもぜひ試してみてください．</p>
+</div>
+</div>
+<div id="odds-ratio-vs-risk-ratio" class="section level1">
+<h1>Odds ratio vs Risk ratio</h1>
+<p><a href="http://torutsuboya.blogspot.com/2016/03/orrr.html">こちらのブログ</a>の指摘はなかなか的を射ていると感じます．</p>
+<blockquote>
+<p>prevalenceが10％を超えると、ORが「X倍」に近似できないのはその通りだと思うが、ORはORのままで議論すればよい（例：ORが2倍でした、などと記述すればよい）気がしていた。
+relative riskの議論に持ち込まなければORで議論しても問題ない気がするが、それで議論を進めて何かまずいものでしょうか。</p>
+</blockquote>
+<p>しかしながら，<strong>疫学の流れを考えればrisk differenceやrisk ratioが根本にあり，odds ratioは代替的に使うものと考えることが自然でしょう</strong>．したがって，<strong>ORがrisk ratioを大きく超える (exaggerate) 状況なのであれば，効果や関連の指標としてORを使うことはあまり望ましくないと考えられます</strong>．<br/n>
+(i.e. イベントの発生が稀でない，など)</p>
+<p>ということで，可能ならオッズ比ではなくリスク比を評価していきたい，ということが今後の流れです．</p>
+<p><br/n>
+<br/n></p>
+</div>
+<div id="回帰分析による推定" class="section level1">
+<h1>回帰分析による推定</h1>
+<p>さきほどの2×2表での計算で分析が済むなら楽なのですが，実際の研究ではたくさんの共変量を調整していくことになります．</p>
+<p>そこで今回は，どのような回帰分析手法を使えばよいのか？という課題に向き合っていきます．</p>
+<div id="ロジスティック回帰" class="section level2">
+<h2>ロジスティック回帰</h2>
+<p>はじめに，頻繁に使われているなロジスティック回帰について．</p>
+<p>これはオッズ比を導くので，今回の状況ではあまり望ましくない分析手法となります．</p>
+<pre class="r"><code>logistic &lt;- glm(outcome ~ exposure, data = df, family = binomial(link = &quot;logit&quot;))
+summary(logistic)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = outcome ~ exposure, family = binomial(link = &quot;logit&quot;), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -0.920  -0.920  -0.623  -0.623   1.863  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.54080    0.07753 -19.874   &lt;2e-16 ***
+## exposure     0.89984    0.10577   8.508   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 2242.7  on 1999  degrees of freedom
+## Residual deviance: 2168.7  on 1998  degrees of freedom
+## AIC: 2172.7
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>exp(coef(logistic)) # OR</code></pre>
+<pre><code>## (Intercept)    exposure 
+##    0.214210    2.459203</code></pre>
+<pre class="r"><code>exp(confint(logistic)) # 95%CI</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre><code>##                 2.5 %    97.5 %
+## (Intercept) 0.1835379 0.2487631
+## exposure    2.0003509 3.0285445</code></pre>
+<p>ちなみに，オッズからリスクを推定することも可能なのですが，信頼区間をうまく得ることができません．<br/n>
+参考: <a href="https://ja.wikipedia.org/wiki/ロジスティック回帰">Wikipedia</a></p>
+<pre class="r"><code>p1 &lt;- 1/(1+exp(0.1867)) # probability at non-exposed group
+p2 &lt;- 1/(1+exp(0.1867-1.061)) # probability at exposed group
+
+p2/p1 # risk ratio, 先ほどの2×2表と概ね一致</code></pre>
+<pre><code>## [1] 1.556123</code></pre>
+</div>
+<div id="ポアソン回帰" class="section level2">
+<h2>ポアソン回帰</h2>
+<p>一般に，ポアソン回帰は0以上の整数値を取るデータに対して適用される回帰モデルで，特に「稀なイベント」に使われています．
+例えば，交差点での交通事故発生件数や製品製造ラインでの故障品などが代表的でしょうか．
+また，故障品のモデリングなど「全体でいくつ作っているか」も重要になる場合は，
+<strong>オフセット項</strong>を導入することで，割合もモデリングすることが可能になります．</p>
+<p><a href="https://www.jstage.jst.go.jp/article/weed/55/4/55_4_287/_pdf">J-Stageの解説論文</a></p>
+<p><br/n></p>
+<p>また，ポアソン回帰は<strong>0/1のbinary outcomeに対しても適用することができます</strong>．<br/n>
+イメージする上では，<a href="https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/1471-2288-8-9">Petersen, et al. 2008</a>のフレーズがわかりやすいように感じます．</p>
+<blockquote>
+<p>It is well known that when the prevalence is low and the sample size is large, probabilities from the Poisson distribution can often be used to approximate probabilities from the binomial distribution. Similarly, <strong>one can think of an existing sample of binomial data (0 or 1) as being approximately Poisson, where the probability of a value of 2 or greater is low enough that no values greater than 1 occurred in the obtained sample</strong>.</p>
+</blockquote>
+<p>もし，ポアソン回帰をbinary outcomeに対して用いる場合は，<a href="https://pubmed.ncbi.nlm.nih.gov/15033648/">Zou, 2004</a>を引用しましょう．
+鉄板論文のようです．</p>
+<p>それでは，実際にすすめていきます．</p>
+<pre class="r"><code>poisson &lt;- glm(outcome ~ exposure, data = df, family = poisson(link = &quot;log&quot;))
+summary(poisson)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = outcome ~ exposure, family = poisson(link = &quot;log&quot;), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.8307  -0.8307  -0.5940  -0.5940   1.3500  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.73489    0.07036 -24.657  &lt; 2e-16 ***
+## exposure     0.67077    0.09133   7.345 2.06e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 1384.0  on 1999  degrees of freedom
+## Residual deviance: 1328.7  on 1998  degrees of freedom
+## AIC: 2326.7
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>exp(coef(poisson)) # risk ratio</code></pre>
+<pre><code>## (Intercept)    exposure 
+##   0.1764192   1.9557350</code></pre>
+<pre class="r"><code>exp(confint(poisson)) # 95%CI, basic poisson regression</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre><code>##                 2.5 %   97.5 %
+## (Intercept) 0.1531951 0.201878
+## exposure    1.6366505 2.341715</code></pre>
+<p>ここで注目していただきたいポイントは信頼区間です．上述のポアソン回帰では，<strong>RR = 1.56 [95%CI: 1.29-1.86]</strong> となりました．<br/n>
+一方，2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> と，<strong>ポアソン回帰の信頼区間の幅が広くなっています</strong>．</p>
+<p>ここが，Zou (2004) の言うところの “<strong>On the other hand, use of Poisson regression tends to provide conservative results</strong>”
+にあたるのでしょう．</p>
+<p><br/n></p>
+<p>そこで，Zouの手法による修正ポアソン回帰の分散計算を実行します．<br/n>
+参考1: <a href="https://charliemarks.com/r-tutorials/modifiedpoissonregression">Zou’s Modified Poisson Regression</a>,
+参考2: <a href="https://rpubs.com/kaz_yos/ku-r3">いろいろ情報盛りだくさん</a></p>
+<pre class="r"><code>library(lmtest)
+library(sandwich)
+
+modified_poiss &lt;- coeftest(poisson, vcov = sandwich)</code></pre>
+<div id="ポアソン回帰の比較" class="section level3">
+<h3>ポアソン回帰の比較</h3>
+<p>係数は同じですね．一方，標準誤差は随分違います．修正ポアソン回帰の方が，小さな標準誤差を得ることに成功しました．</p>
+<pre class="r"><code>modified_poiss # 修正ポアソン回帰</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##              Estimate Std. Error  z value  Pr(&gt;|z|)    
+## (Intercept) -1.734892   0.063852 -27.1703 &lt; 2.2e-16 ***
+## exposure     0.670766   0.079356   8.4526 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary(poisson) # (再掲) 通常のポアソン回帰</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = outcome ~ exposure, family = poisson(link = &quot;log&quot;), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -0.8307  -0.8307  -0.5940  -0.5940   1.3500  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.73489    0.07036 -24.657  &lt; 2e-16 ***
+## exposure     0.67077    0.09133   7.345 2.06e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 1384.0  on 1999  degrees of freedom
+## Residual deviance: 1328.7  on 1998  degrees of freedom
+## AIC: 2326.7
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>では，修正ポアソン回帰に基づく信頼区間を計算します．<br/n>
+面倒なことに，自分で計算をしなくてはならないようです．</p>
+<pre class="r"><code>modpoiss_results &lt;- round(cbind(exp(cbind(RR = modified_poiss[,1], 
+                                          LCI = modified_poiss[,1] + qnorm(0.05/2)*modified_poiss[,2],
+                                          UCI = modified_poiss[,1] - qnorm(0.05/2)*modified_poiss[,2])),
+                                          P = modified_poiss[,4]),4)
+
+modpoiss_results</code></pre>
+<pre><code>##                 RR    LCI    UCI P
+## (Intercept) 0.1764 0.1557 0.1999 0
+## exposure    1.9557 1.6740 2.2849 0</code></pre>
+<p>2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> ですから，<strong>2×2表と修正ポアソン回帰との信頼区間の幅が一致しました！</strong>．</p>
+<p><br/n>
+<br/n></p>
+</div>
+</div>
+<div id="log-binomial" class="section level2">
+<h2>log-binomial</h2>
+<p>log binomialの回帰について，勉強することは初めてのことです．そこで，モデルの式も含めて記していきます．</p>
+<div id="モデル式" class="section level3">
+<h3>モデル式</h3>
+<p>GLM族なので，a) 線形予測子，b) リンク関数，c) 確率分布の3つで記述することができます．<br/n>
+やっていきましょう．</p>
+<p>log-binomial regressionのモデルは以下の通りです（説明変数が2つとします）．<br/n>
+参考: <a href="https://bmcmedresmethodol.biomedcentral.com/articles/10.1186/s12874-018-0519-5">Chen, et al. 2018</a></p>
+<p><span class="math display">\[\log{(p_i)} = b_0 +b_1x_{i1}+b_2x_{i2} \]</span>
+<span class="math display">\[y_i \sim Binomial(n, p_i)\]</span></p>
+<p>ただ，今回は個人が集計単位でy_iは0/1のみがアウトカムなので，n=1となります．<br/n>
+(二項分布なので，コイン投げを1回するイメージですね)</p>
+<p><br/n></p>
+</div>
+<div id="なぜlog" class="section level3">
+<h3>なぜ”log”?</h3>
+<p>ロジスティック回帰はとても良くできたモデルだと思います．</p>
+<ul>
+<li>解釈が比較的簡単</li>
+<li>確率のシグモイド的な振る舞いを考えることができる（「ある閾値を超えるとイベントが起こる」といった考え方）</li>
+<li>0≤p≤1の確率pに対し，0≤ p/(1-p) &lt;∞であり，log(p/(1-p))は負の無限大から無限大を取るので，被説明変数として適切</li>
+</ul>
+<p><br/n></p>
+<p>そんな中log-binomialモデルでは，なぜlog(p)を考えるのでしょうか？<br/n>
+オッズではなく確率をモデルできることは強みです．<br/n>
+ただし，<strong>0≤p≤1の確率pに対し，log(p)は負の無限大から0を取るので，実数全体を取りうるわけではありません</strong>．ここがどうにも妙なところです．</p>
+<p>この妙な点は，収束が難しいことも引き起こしてしまうようです．</p>
+<blockquote>
+<p>However, the Log link function in Log-Binomial models restricts the probabilities of an outcome to be greater than or equal to zero, that is, to fall within the bounds [0, ∞). Due to this mismatch between the bounds of the model and the allowable outcome, in practice, the Log-Binomial model will routinely fail to converge and will not provide the parameter estimates (Localio et al. 2007).</p>
+</blockquote>
+<p>(from: <a href="https://support.sas.com/resources/papers/proceedings11/345-2011.pdf">SAS</a>)</p>
+<p>なんだか難しそうですが，とりあえずやってみましょう．</p>
+</div>
+<div id="log-binomial-regの実践" class="section level3">
+<h3>log-binomial regの実践</h3>
+<pre class="r"><code>logbin &lt;- glm(outcome ~ exposure, data = df, family = binomial(link = &quot;log&quot;))
+
+summary(logbin)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = outcome ~ exposure, family = binomial(link = &quot;log&quot;), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -0.920  -0.920  -0.623  -0.623   1.863  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.73489    0.06385 -27.170   &lt;2e-16 ***
+## exposure     0.67077    0.07936   8.453   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 2242.7  on 1999  degrees of freedom
+## Residual deviance: 2168.7  on 1998  degrees of freedom
+## AIC: 2172.7
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>exp(coef(logbin)) # risk ratio</code></pre>
+<pre><code>## (Intercept)    exposure 
+##   0.1764192   1.9557350</code></pre>
+<pre class="r"><code>exp(confint(logbin)) # 95%CI</code></pre>
+<pre><code>## Waiting for profiling to be done...</code></pre>
+<pre><code>##                 2.5 %    97.5 %
+## (Intercept) 0.1550755 0.1992073
+## exposure    1.6760552 2.2884196</code></pre>
+<p>2×2表で得たリスク比は <strong>1.56 [95%CI: 1.39-1.74]</strong> でしたから，普通にできてますね．</p>
+<p>収束の問題が起こるのは，データが十分にない（サンプルサイズ・イベント数など）場合のようです．<a href="https://ete-online.biomedcentral.com/articles/10.1186/1742-7622-10-14">Williamson, et al. 2013</a></p>
+<blockquote>
+<p>Recently there was a paper published in Stroke [4], where in the statistical methods section the authors
+indicated that: “As a first approach to the multivariable analysis, we used a log-binomial model, but
+owing to the sparseness of data, this failed to converge.</p>
+</blockquote>
+<p>デフォルトの設定では，大きな問題にはなりませんでした．</p>
+<p><br/n></p>
+<div id="トラブルシューティング" class="section level4">
+<h4>トラブルシューティング</h4>
+<p>もし，以下のようなエラーで最尤推定の際の初期値を求められた場合，glm中のstartを設定することで前進できる可能性があります．</p>
+<ul>
+<li>Error: cannot find valid starting values: please specify some</li>
+<li>エラー: 係数の有効なセットが見出されませんでした: 初期値を与えてください</li>
+</ul>
+<p><a href="https://stats.stackexchange.com/questions/105633/what-to-do-when-a-log-binomial-models-convergence-fails">参考1, 対応について</a>,
+<a href="https://stats.stackexchange.com/questions/62460/what-are-starting-values-in-glm-function">参考2, 考え方について</a></p>
+<p><br/n></p>
+<p>考え方としては，「切片をlog(mean(y)), それ以外の係数を0にしよう！」ということです．構造モデルを考えれば，帰無仮説下H0の状況での考えを初期値としている，というイメージがつかめると思います．もちろん，「x_iが0のとき」という意味合いを考えて，適宜調整してくださいね．</p>
+<p><span class="math display">\[\log{(p_i)} = b_0 +b_1x_{i1}+b_2x_{i2} \]</span></p>
+<p><br/n></p>
+<p>なお，上で紹介した参考1で述べられているコードには誤りがあります．<br/n>
+startの引数として，“start=c(log(mean(y), rep(0, np-1))” とありますが，
+“start = c(log(mean(y)), rep(0, np-1))”としましょう．<br/n>
+log(0)は負の無限大となってしまい，定義できないからです．（単純なミスでしょう）</p>
+<p><br/n></p>
+<p>先ほど実践したlog-binomial modelにstartの引数を指定すると，こんな形になります．<br/n>
+rep(0, np-1)のnpは切片を含む説明変数の数とありますが，factor型の説明変数を投入している場合は水準の数だけ増えてしまうことにも注意してください．</p>
+<pre class="r"><code># startの引数設定
+logbin2 &lt;- glm(outcome ~ exposure, data = df, family = binomial(link = &quot;log&quot;),
+               start = c(log(mean(df$outcome)), rep(0, 1))) # 説明変数が切片と1つの因子なので，rep(0, 1)となる
+
+summary(logbin2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = outcome ~ exposure, family = binomial(link = &quot;log&quot;), 
+##     data = df, start = c(log(mean(df$outcome)), rep(0, 1)))
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -0.920  -0.920  -0.623  -0.623   1.863  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.73489    0.06385 -27.170   &lt;2e-16 ***
+## exposure     0.67077    0.07936   8.453   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 2242.7  on 1999  degrees of freedom
+## Residual deviance: 2168.7  on 1998  degrees of freedom
+## AIC: 2172.7
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<p><br/n></p>
+</div>
+</div>
+</div>
+</div>
+<div id="まとめ" class="section level1">
+<h1>まとめ</h1>
+<ul>
+<li>2値のイベントの発生割合が大きい場合，オッズ比はリスク比よりも大きくなる (away from nullの程度が大きくなる)</li>
+<li>オッズ比よりもリスク比の方が疫学的な関心が高いので，オッズ比とリスク比の乖離は問題となる．したがって，イベントが多い状況でロジスティック回帰を用いることは，慎重に考えるべき．</li>
+<li>修正ポアソン回帰とlog-binomial regression (対数二項回帰) が代替候補．</li>
+</ul>
+<p><br/n>
+<br/n>
+<br/n></p>
+</div>
+<div id="参考文献" class="section level1">
+<h1>参考文献</h1>
+<ul>
+<li>Zou, G. (2004). A modified poisson regression approach to prospective studies with binary data. American journal of epidemiology, 159(7), 702-706.</li>
+<li>Petersen, M. R., &amp; Deddens, J. A. (2008). A comparison of two methods for estimating prevalence ratios. BMC medical research methodology, 8(1), 1-9.</li>
+<li>Chen, W., Qian, L., Shi, J., &amp; Franklin, M. (2018). Comparing performance between log-binomial and robust Poisson regression models for estimating risk ratios under model misspecification. BMC medical research methodology, 18(1), 1-12.</li>
+<li>Williamson, T., Eliasziw, M., &amp; Fick, G. H. (2013). Log-binomial models: exploring failed convergence. Emerging themes in epidemiology, 10(1), 1-10.</li>
+</ul>
+</div>
