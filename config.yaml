@@ -1,0 +1,85 @@
+baseurl: https://zhaohuabing.com
+title: Sacoche
+theme: hugo-theme-cleanwhite
+languageCode: en-us
+disqusShortname: ''
+googleAnalytics: ''
+publishDir: "docs"
+preserveTaxonomyNames: yes
+paginate: 5
+hasCJKLanguage: yes
+outputs:
+  home:
+    - HTML
+    - RSS
+    - Algolia
+params:
+  SEOTitle: Sacoche
+  about_me: yes
+  addtional_menus:
+    - href: /archive/
+      title: ARCHIVE
+    - href: /notes/
+      title: NOTES
+    - href: /about/
+      title: ABOUT
+  algolia:
+    params:
+      - categories
+      - tags
+    vars:
+      - title
+      - summary
+      - date
+      - publishdate
+      - expirydate
+      - permalink
+  algolia_apiKey: ''
+  algolia_appId: ''
+  algolia_indexName: ''
+  algolia_search: yes
+  ba_track_id: ''
+  bookmark_link:
+    - href: https://martinfowler.com
+      title: Martin Fowler
+    - href: http://www.servicemesher.com
+      title: ServiceMesher
+    - href: https://pxhere.com
+      title: Pxhere
+    - href: https://unsplash.com
+      title: unsplash
+  bookmarks: no
+  description: Epidemiology, Statistical modeling, data infrastructure, and data viz
+  disqus_proxy: ''
+  disqus_site: ''
+  featured_condition_size: 1
+  featured_tags: no
+  header_image: img/home-bg-jeep.jpg
+  image_404: img/404-bg.jpg
+  keyword: Epidemiology, IT, cloud
+  leancloud_app_id: ''
+  leancloud_app_key: ''
+  omit_categories: no
+  page_view_conter: no
+  reward: yes
+  sidebar_about_description: Master of Public Health / Data analysit / data infrastructure enginner | Be a knowledge craator
+  sidebar_avatar: img/zhaohuabing.png
+  slogan: Make everything scalable and visible
+  social:
+    email: youremail@gmail.com
+    github: https://github.com/toro-maguro/toro-maguro.github.io
+    rss: yes
+  title_404: sorry, file not found
+  twikoo_env_id: ''
+outputFormats:
+  Algolia:
+    baseName: algolia
+    isPlainText: yes
+    mediaType: application/json
+    notAlternative: yes
+markup:
+  highlight:
+    style: dracula
+  tableOfContents:
+    endLevel: 2
+    startLevel: 1
