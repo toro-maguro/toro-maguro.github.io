@@ -61,7 +61,7 @@ params:
   leancloud_app_key: ''
   omit_categories: no
   page_view_conter: no
-  reward: yes
+  reward: no
   sidebar_about_description: Master of Public Health / Data analysit / data infrastructure enginner | Be a knowledge craator
   sidebar_avatar: img/zhaohuabing.png
   slogan: Make everything scalable and visible
