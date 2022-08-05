@@ -8,6 +8,9 @@ categories:
 tags:
   - Epidemiology
   - power
+output:
+  html_document:
+    highlight: "zenburn"
 ---
 
 
