@@ -60,11 +60,10 @@ params:
   omit_categories: no
   page_view_conter: no
   reward: no
-  sidebar_about_description: Master of Public Health / Data analysit / data infrastructure enginner | Be a knowledge craator
+  sidebar_about_description: Master of Public Health | Data analysit | data infrastructure enginner || Be a knowledge craator
   sidebar_avatar: img/zhaohuabing.png
   slogan: Make everything scalable and visible
   social:
-    email: youremail@gmail.com
     github: https://github.com/toro-maguro/toro-maguro.github.io
     rss: yes
   title_404: sorry, file not found
