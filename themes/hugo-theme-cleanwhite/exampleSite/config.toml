@@ -1,7 +1,7 @@
 baseurl = "https://toro-maguro.github.io"
 title = "Sacoche"
 theme = "hugo-theme-cleanwhite"
-languageCode = "en-us"
+languageCode = "ja"
 # Enable comments by entering your Disqus shortname
 disqusShortname = ""
 googleAnalytics = ""

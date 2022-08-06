@@ -1,7 +1,7 @@
 baseurl: https://toro-maguro.github.io
 title: Sacoche
 theme: hugo-theme-cleanwhite
-languageCode: en-us
+languageCode: ja
 disqusShortname: ''
 googleAnalytics: ''
 publishDir: "docs"
@@ -76,7 +76,8 @@ outputFormats:
     notAlternative: yes
 markup:
   highlight:
+    noClasses: true
     style: dracula
   tableOfContents:
     endLevel: 2
-    startLevel: 1
+    startLevel: 6
