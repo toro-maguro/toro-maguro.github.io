@@ -100,7 +100,6 @@ Visualize_PosthocPowerAnalysis <- function(n1, n2, prob1, prob2, itr=10000){
   plot <- ggplot(data = data, aes(x = posthoc_power)) + 
     geom_histogram() + 
     geom_vline(xintercept = true_power, linetype = 2, size=1, colour = "red") + 
-    xlim(c(0, 1)) +
     labs(title = "Histogram of post-hoc power, along with true power, based on Monte Carlo method",
          subtitle = subtitle,
          caption = caption) + 
@@ -134,7 +133,7 @@ Visualize_PosthocPowerAnalysis <- function(n1, n2, prob1, prob2, itr=10000){
 各群200人 (合計400人)、コントロール群でイベント発生割合が10%, 曝露群で15% (i.e., risk ratio = 1.5) とします。
 
 下の図を見てください。例1の設定では、真のpower (=prospective power) は0.33です。
-一方、この設定で得られたサンプリングされた集団で得たpost-hoc powerは0.10程度から0.90近くまで、非常に様々な値を取ります。
+一方、この設定で得られたサンプリングされた集団で得たpost-hoc powerは0付近から1.0近くまで、非常に様々な値を取ります。
 また、post-hoc powerの最頻値もprospective powerから乖離していますね。
 
 これじゃ、post-hoc powerを見たところで、何も言えないなーって感じしちゃいますよね。
@@ -161,7 +160,7 @@ Visualize_PosthocPowerAnalysis(n1 = 650, n2 = 650,
 ただprospective powerが0.925と、ほぼほぼ有意と判断される状況ですから、post-hoc power analysisをしたい状況ではないような気がします。
 
 ```{r, message=FALSE, warning=FALSE}
-Visualize_PosthocPowerAnalysis(n1 = 1500, n2 = 1500, 
+Visualize_PosthocPowerAnalysis(n1 = 1000, n2 = 1000, 
                                prob1 = 0.1, prob2 = 0.15)
 ```
 
