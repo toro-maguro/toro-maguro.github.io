@@ -121,7 +121,7 @@ women <- matrix(c(tab[2,2,2], tab[2,1,2], tab[1,2,2], tab[1,1,2]),
               nrow = 2, byrow = TRUE)
 dat <- array(c(men, women), dim = c(2,2,2))
 
-crosstable <- epi.2by2(dat, method = "cross.sectional")
+crosstable <- epi.2by2(dat, method = "cohort.count")
 crosstable
 ```
 
@@ -137,7 +137,7 @@ SummariseResult <- function(est, lower, upper){
   res <- paste0(est, " [95%CI: ", lower, "-", upper, "]")
 }
 
-RR <- RoundResult(crosstable[["massoc.detail"]][["PR.mh.wald"]])
+RR <- RoundResult(crosstable[["massoc.detail"]][["RR.mh.wald"]])
 OR <- RoundResult(crosstable[["massoc.detail"]][["OR.mh.wald"]])
 
 RR_2by2 <- SummariseResult(RR[1], RR[2], RR[3])
@@ -145,11 +145,10 @@ OR_2by2 <- SummariseResult(OR[1], OR[2], OR[3])
 ```
 
 デフォルトの設定 (Mantel-Haenszel) だと、効果の指標は次のとおりです。
+**リスク比とオッズ比との間に大きな乖離がありますね**。
 
 * **risk ratio: `r RR_2by2`**
 * **odds ratio: `r OR_2by2`**
-
-**リスク比とオッズ比との乖離がありますね**。
 
 # Odds ratio vs Risk ratio
 
@@ -187,6 +186,8 @@ exp(confint(logistic)) # 95%CI
 
 ## ポアソン回帰
 
+### 通常のポアソン回帰
+
 一般に、ポアソン回帰は0以上の整数値を取るデータに対して適用される回帰モデルで、特に「稀なイベント」に使われています。
 例えば、交差点での交通事故発生件数や製品製造ラインでの故障品などが代表的でしょうか。
 また、故障品のモデリングなど「全体でいくつ作っているか」も重要になる場合は、
@@ -198,7 +199,7 @@ exp(confint(logistic)) # 95%CI
 > It is well known that when the prevalence is low and the sample size is large, probabilities from the Poisson distribution can often be used to approximate probabilities from the binomial distribution. Similarly, **one can think of an existing sample of binomial data (0 or 1) as being approximately Poisson, where the probability of a value of 2 or greater is low enough that no values greater than 1 occurred in the obtained sample**.
 
 もし、ポアソン回帰をbinary outcomeに対して用いる場合は、[Zou, 2004](https://pubmed.ncbi.nlm.nih.gov/15033648/)を引用すると良さげです (鉄板論文らしい)。
-それでは、実際にすすめていきます。
+それでは、実際にすすめていきます。まずは通常のポアソン回帰から。
 
 ```{r, message=F}
 poisson <- glm(outcome ~ exposure + sex, data = df, family = poisson(link = "log"))
@@ -208,13 +209,12 @@ exp(coef(poisson)) # risk ratio
 exp(confint(poisson)) # 95%CI, basic poisson regression
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 Poisson_RR <- RoundResult(exp(coef(poisson))[2])
 Poisson_lower <- RoundResult(exp(confint(poisson))[2,1])
 Poisson_upper <- RoundResult(exp(confint(poisson))[2,2])
 
 Poisson_result <- SummariseResult(Poisson_RR, Poisson_lower, Poisson_upper)
-Poisson_result
 ```
 
 
@@ -226,7 +226,7 @@ Poisson_result
 ここが、Zou (2004) の言うところの "**On the other hand, use of Poisson regression tends to provide conservative results**" 
 にあたるのでしょう。
 
-<br/n>
+### ロバスト分散を使った修正ポアソン回帰
 
 そこで、Zouの手法による修正ポアソン回帰のロバスト分散の計算を実行します。<br/n>
 参考1: [Zou’s Modified Poisson Regression](https://charliemarks.com/r-tutorials/modifiedpoissonregression), 
@@ -239,15 +239,13 @@ pacman::p_load(lmtest, sandwich)
 modified_poiss <- coeftest(poisson, vcov = sandwich)
 ```
 
-### ポアソン回帰の比較
-
 係数は同じですね。一方、標準誤差は随分違います。修正ポアソン回帰の方が、小さな標準誤差を得ることに成功しました。
 
 ```{r}
 modified_poiss # 修正ポアソン回帰
 ```
 
-では、修正ポアソン回帰に基づく信頼区間を計算します。<br/n>
+では、修正ポアソン回帰に基づく信頼区間を計算します。
 面倒なことに、自分で計算をしなくてはならないようです。
 
 ```{r}
@@ -317,7 +315,7 @@ $$y_i \sim Binomial(n, p_i)$$
 
 ### log-binomial regの実践
 
-```{r}
+```{r, message=FALSE}
 logbin <- glm(outcome ~ exposure + sex, data = df, family = binomial(link = "log"))
 
 summary(logbin)
