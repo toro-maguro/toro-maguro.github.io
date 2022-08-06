@@ -18,7 +18,14 @@ output:
 
 <div id="powerの分布を考えてみよう" class="section level1">
 <h1>powerの分布を考えてみよう</h1>
-<p>真の値がわかっている場合の、powerの分布</p>
+<p>モチベ: 様々な真の値に対するpowerの分布を計算したい。<br>
+“真のリスク比” なんて神のみぞ知る値。powerの計算ってどれくらいrobustnessがあるのかな？という関心です。</p>
+<ul>
+<li>曝露変数: 0/1の2値、結果変数: 0/1の2値、のシチュエーション</li>
+<li>真のリスク比を与えられるとpowerを返す関数を作り、リスク比に対するpowerの関係を可視化したい</li>
+</ul>
+<p>真の値と言っているのに、変動するのはおかしいんじゃ？という指摘はごもっともです。今回は単なる思考実験と思ってください。</p>
+<p><br></p>
 <p>NOTE: これはあくまで真の値を知っているときの話であって、標本値の話ではない</p>
 <pre class="r"><code>pacman::p_load(pwr, tidyverse)
 
@@ -89,6 +96,34 @@ PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.
 <li>p_event_control: コントロール群でのイベント発生割合</li>
 </ul>
 <p>これらを入力すると、曝露のリスク比(横軸)に対するpower(縦軸)を返します。</p>
-<pre class="r"><code>PlotPower_byRR(n_control = 114, n_exposed = 46, p_event_control = 0.5)</code></pre>
+<div id="example1" class="section level2">
+<h2>example1</h2>
+<p>以降のセクションでは、リスク比 (RR) が1以上と考えます。(RR&lt;1でも同じ議論です)</p>
+<p><br></p>
+<p>コントロール群100人、曝露群100人で、曝露群でのイベント発生割合が25%とします。</p>
+<p>真のRRが1.75ならpowerは0.80となり、「十分」と考えられます。
+ただし、リスク比が1.5ならpower=0.50程度となります。かなりばらつくんですね。</p>
+<pre class="r"><code>PlotPower_byRR(n_control = 100, 
+               n_exposed = 100, 
+               p_event_control = 0.25)</code></pre>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="example2" class="section level2">
+<h2>example2</h2>
+<p>人数を増やしてみましょう。今度はコントロール群200人、曝露グループ200人にします。</p>
+<p>この場合、RR=1.75のときpowerはほぼ1 (100%) となります。人数が増えたので、当然です。
+power=0.8を達成するリスク比は1.52となりました。</p>
+<pre class="r"><code>PlotPower_byRR(n_control = 200, 
+               n_exposed = 200, 
+               p_event_control = 0.25)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+</div>
+<div id="感想" class="section level1">
+<h1>感想</h1>
+<p>先行研究で、RR=1.75 [95%CI: 1.50-2.00] みたいな結果があったとしましょう。
+同じような研究を実施する場合、この値を使ってpower計算することになると思います。</p>
+<p>素直にRR=1.75という点推定値を使えば、example1の通り、各群100人合計200人でokです。
+ただし、「RR=1.75が真の値である」という仮定を置いているだけで、実際には下振れしてしまうかもしれません。期待値的に点推定値を使うのはご尤もなんですが、真の値なんて知り得ない以上、ある程度ばらつきや分布を考えてもいいのかも？と思ってしまいました。例えば ±1σ の幅を持たせてあげるとか。</p>
+<p>こういう話は研究のリソースや研究倫理も絡むのでもっと難しい議論になりそうですね。ひとまず勉強の感想でした。</p>
 </div>
