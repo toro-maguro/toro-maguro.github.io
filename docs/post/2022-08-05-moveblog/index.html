@@ -216,14 +216,15 @@
 
 <div id="引っ越しした理由" class="section level2">
 <h2>引っ越しした理由</h2>
-<p>NOTE: これは完全に備忘録で、自分の読者像的にマッチしている人はおそらくいません笑</p>
+<p>NOTE: これは完全に備忘録で、自分の読者像的にマッチしている人はおそらくいません。</p>
 <p><br></p>
 <p>1番の理由は、gitとgithubを勉強している途中でやりたくなったから、です。
-そもそも誰かに検索して届いてほしい、という発想があまりないので、はてなブログだろうと何でも良いというのも関係します。</p>
-<p>僕がブログに対して求めるものは次の2点です。</p>
+そもそも誰かに検索されたい、見知らぬ誰かに届いてほしい、という発想があまりないので、はてなブログだろうと何でも良いというのも関係します。
+そもそも公開し始めた理由は、知り合いに共有するときに.Rmdや.htmlだと共有しにくいということが始まりだったので。</p>
+<p>僕がこのブログに対して求めるものは次の2点です。</p>
 <ol style="list-style-type: decimal">
 <li>RStudioのみを使って分析を含む記事を.Rmdで書きたい。わざわざ、はてなブログに行くのは面倒なので、RStudioで完結してほしい。</li>
-<li>gitを使ってバージョン管理したい</li>
+<li>gitを使ってバージョン管理したい (勉強のため使いたい)</li>
 </ol>
 <p>そこで、{blogdown}をRStudioで実行し、RStudio→ github→ github pagesという形で環境を作りました。</p>
 <p>執筆環境の前後比較はこんな感じ</p>
@@ -234,7 +235,7 @@
 </div>
 <div id="blogdownで記事を書いていく" class="section level2">
 <h2>{blogdown}で記事を書いていく</h2>
-<p>n番煎じなので、特に解説はなし。ぽんこつ文章読まないマンの僕のした手順だけ書きます。</p>
+<p>n番煎じなので、特に解説はなしです。ぽんこつ文章読まないマンの僕のした手順だけ書きます。</p>
 <div id="初期設定" class="section level3">
 <h3>初期設定</h3>
 <p>githubのSSH設定やRStudioとgithubとの関係等の説明は省略します。</p>
@@ -263,9 +264,9 @@ new_site(theme = &quot;zhaohuabing/hugo-theme-cleanwhite&quot;) </code></pre>
 <li>githubに移動。レポジトリのsettingに行って、pagesタブへ。</li>
 <li>“Your GitHub Pages site is currently being built from the /docs folder in the main branch.”にする。</li>
 </ol>
-<p>これで一旦見れるようになるはず。まずはここをチェックポイントとする。
-config.yamlあたりは、沼ポイント多めに感じた。いったん動くものを作ってから編集することがおすすめ。(ほんと常識がなさすぎて、いろいろとわからん)</p>
-<p>hugoテーマによっては、この時点で走らないものもあった。おそらく自分のせいなんだが、とっとと諦めました。</p>
+<p>これで一旦見れるようになるはず。まずはここをチェックポイントとすると良さげです。
+config.yamlあたりは、沼ポイント多めに感じました。いったん動くものを作ってから編集することがおすすめ。(ほんと常識がなさすぎて、いろいろとわからん)</p>
+<p>hugoテーマによっては、この時点で走らないものもありました。おそらく自分のせいなんですが、とっとと諦めました。</p>
 </div>
 <div id="記事の書き方" class="section level3">
 <h3>記事の書き方</h3>
@@ -276,6 +277,8 @@ config.yamlあたりは、沼ポイント多めに感じた。いったん動く
 <li>commit &amp; push</li>
 </ol>
 <p>buildとrenderを忘れがちなので注意。</p>
+<p>写真を入れる場合は、/content/post/日付とタイトル/index.files に写真を入れるのがおすすめ。
+パスは ./index.files/hoge.png と、通常のMarkdownの通り書けば、workします。</p>
 </div>
 <div id="参考にしたもの" class="section level3">
 <h3>参考にしたもの</h3>
@@ -291,10 +294,11 @@ config.yamlあたりは、沼ポイント多めに感じた。いったん動く
 <div id="感想" class="section level2">
 <h2>感想</h2>
 <ul>
-<li>ちゃんと動いて嬉しかった。</li>
-<li>Rmdを編集して、自動で記事になるのは結構ありがたい。</li>
+<li>はてぶとかのcontents management systems ってやっぱすごいんだなあという感想。編集のやりやすさは圧倒的にはてぶの方が良い。</li>
+<li>とはいえ、Rmdを編集したら自動で記事になるのは結構ありがたい。</li>
 <li>git関連の用語も少しは馴染めたように思う、、、</li>
-<li>昔の自分のコードを見ると死ぬほど汚くて悲しい。関数を作るとか、独学だと習わなかったんや…</li>
+<li>(関係ないが) 昔の自分のコードを見ると死ぬほど汚くて悲しい。関数を作るとか、独学だと習わなかったんや…</li>
+<li>2022/08/05時点で、検索機能をうまく使えていない…この辺javascripitをもう少し理解しないと解けないんだろうか</li>
 </ul>
 </div>
 
@@ -349,6 +353,29 @@ config.yamlあたりは、沼ポイント多めに感じた。いったん動く
                 sidebar-container">
 
                 
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/epidemiology" title="epidemiology">
+                            epidemiology
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/power" title="power">
+                            power
+                        </a>
+                        
+                        
+                    </div>
+                </section>
                 
 
                 

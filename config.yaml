@@ -51,7 +51,7 @@ params:
   disqus_proxy: ''
   disqus_site: ''
   featured_condition_size: 1
-  featured_tags: no
+  featured_tags: yes
   header_image: img/home-bg-jeep.jpg
   image_404: img/404-bg.jpg
   keyword: Epidemiology, IT, cloud

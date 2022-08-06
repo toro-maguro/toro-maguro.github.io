@@ -20,8 +20,8 @@ showtoc: false
 最近共著の論文でpower関連の話題に出会ったので。
 [前回](https://toro-maguro.github.io/post/2022-08-05-powerfunction/)に引き続きpower関連の話です。
 
-とりあえず、これ読みましょう→ [Zhang, etal. 2019](https://gpsych.bmj.com/content/32/4/e100069) <br>
-おもしろいです。
+とりあえず、これ読みましょう→ [Zhang, etal. 2019](https://gpsych.bmj.com/content/32/4/e100069) 
+めちゃくちゃおもしろいです。
 
 Zhangらの主張は、こういう内容だと理解しました。
 
@@ -37,11 +37,11 @@ Zhangらの主張は、こういう内容だと理解しました。
 # post hoc power analysisを自分でも回してみた
 
 読んだら自作できそうだったので、自分でも試してみます。
-設定はexposureもoutcomeも2値変数 (Zhangらはoutcomeが連続変数なので、少し違います。同じ議論ですが) です。
+設定はexposureもoutcomeも2値変数です (Zhangらはoutcomeが連続変数なので、少し違います。同じ議論ですが)
 
 用語の設定を簡単にしておくと、
 
-* 本来、prospective studyをする場合に事前にpower計算をして、リクルート数を決めますね。ここで得られるpowerをprospective powerとします。
+* 本来、prospective studyをする場合に事前にpower計算をして、リクルート数を決めます。ここで得られるpowerをprospective powerと呼びます。
 * 対して、研究して効果の指標を得た後に、「このpowerってどの程度なの？」と事後にpowerを計算するシチュエーションがあります。ここで得たpowerをpost-hoc powerとします。
 
 さて、今回実行した手順を簡単に言うとこんな形になります。
@@ -113,7 +113,7 @@ Visualize_PosthocPowerAnalysis <- function(n1, n2, prob1, prob2, itr=10000){
 
 説明が重複しますが、一応。
 
-> コントロール群・曝露群の人数と、それぞれの真のイベント発生割合 (母集団でそのようなイベント発生割合が得られる、と仮定) を入力すると、true power (1つの値) & post-hoc powerの分布 (1万回の試行から取得) を返します。なお、post-hoc powerは、真の値に従ってサンプリングされたデータから計算されます。
+コントロール群・曝露群の人数と、それぞれの真のイベント発生割合 (母集団でそのようなイベント発生割合が得られる、と仮定) を入力すると、true power (1つの値) & post-hoc powerの分布 (1万回の試行から取得) を返します。なお、post-hoc powerは、真の値に従ってサンプリングされたデータから計算されます。
 
 引数の説明は以下の通りです。
 
@@ -128,22 +128,24 @@ Visualize_PosthocPowerAnalysis <- function(n1, n2, prob1, prob2, itr=10000){
 
 今回は例を3つ作成し、効果の値は一定としつつ人数を変えていきます。なお、効果の大小を変更しても同じ結論になります。
 
-### 例1
+### 例1: 各群200人
 
 各群200人 (合計400人)、コントロール群でイベント発生割合が10%, 曝露群で15% (i.e., risk ratio = 1.5) とします。
 
-下の図を見てください。例1の設定では、真のpower (=prospective power) は0.33です。
+下の図を見てください。例1の設定では、真のpower (= prospective power) は0.33です。
 一方、この設定で得られたサンプリングされた集団で得たpost-hoc powerは0付近から1.0近くまで、非常に様々な値を取ります。
 また、post-hoc powerの最頻値もprospective powerから乖離していますね。
 
-これじゃ、post-hoc powerを見たところで、何も言えないなーって感じしちゃいますよね。
+実際にpost-hoc powerを計算する場合は、たった1つの値を得るだけです。今回のように分布を得るわけではありません。
+そうなると、post-hoc powerの1つの値を見たところで、何も言えないなーって感じしちゃいますよね。
+prospective powerの参考とするには、あまりに粗い指標と言えそうです。
 
 ```{r, message=FALSE, warning=FALSE}
 Visualize_PosthocPowerAnalysis(n1 = 200, n2 = 200, 
                                prob1 = 0.1, prob2 = 0.15)
 ```
 
-### 例2
+### 例2: 各群650人
 
 もう少し人数を増やします。prospective powerが0.8近くになるよう、各群650人 (合計1300人) としました。この状況でも、post-hoc powerはかなりばらついた分布を取ります。
 
@@ -152,7 +154,7 @@ Visualize_PosthocPowerAnalysis(n1 = 650, n2 = 650,
                                prob1 = 0.1, prob2 = 0.15)
 ```
 
-### 例3
+### 例3: 各群1000人
 
 やけくそ気味に各群1000人 (合計2000人) としました。prospective power=0.925です。
 
@@ -172,7 +174,7 @@ Visualize_PosthocPowerAnalysis(n1 = 1000, n2 = 1000,
 * 「標本集団で得られた標本値を、あたかも母集団の真の値かのように使ってpowerを計算するのは、概念的に間違っている」という指摘はごもっとも。
 * post-hoc powerは、a) 研究参加者数が少ない、または b) 効果が小さい場合、prospective powerに対してばらついた値を返す、ということを再現。納得。
 
-したがって、査読コメントで「post-hoc power計算してください」は結構ミスリーディングな議論なんだなあと思いました。
+したがって、査読コメントで「post-hoc power計算してください」は結構ミスリーディングな議論になりえるトピックなんだなあと思いました。
 
 <br>
 
