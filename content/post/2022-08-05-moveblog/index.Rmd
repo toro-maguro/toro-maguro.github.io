@@ -25,9 +25,9 @@ NOTE: これは完全に備忘録で、自分の読者像的にマッチして�
 * RStudioで .Rmd で分析を含む記事を書きたい。わざわざ、はてなブログに行くのは面倒なので、RStudioで完結してほしい。
 * そのままknitして .html を出力、そのままgithubにpushして記事を更新したい。(実際はknitすらしてませんが)
 
-ワークフローはこんな感じ
+執筆環境の前後比較はこんな感じ
 
-![workflow](./index_files/workflow.png)
+![environment](./index_files/workenvironment.png)
 
 ## {blogdown}で記事を書いていく
 
