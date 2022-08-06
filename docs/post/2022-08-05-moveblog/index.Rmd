@@ -62,7 +62,7 @@ new_site(theme = "zhaohuabing/hugo-theme-cleanwhite")
 5. new_site() を走らせると、「今見る？」みたいな質問がくるが、nを選択して拒否
 6. config.yamlを編集して、publishDir: "docs" を追加する。どこの行でもいけるっぽいが、インデントはなしで。この作業で、gh pagesのdocsから読むことに対応できる ([FYI](https://bookdown.org/yihui/blogdown/rstudio-ide.html#fn13))
 7. build_site(), render_site(), 最後にserve_site() と唱えると、webサイトがローカルに立ち上がる。すげえ。
-8. ルートディレクトリのconfig.yamlと、config.toml (themes/ (omit) / example/Site/config.toml) を編集して、baseurlを自分のgithub pagesを指定。今回のケースでは、https:// githubのアカウント名 .github.io で良い (see 1)
+8. ルートディレクトリのconfig.yamlと、config.toml (pathは themes/ (中略) / example/Site/config.toml) を編集して、baseurlを自分のgithub pagesを指定。今回のケースでは、https:// githubのアカウント名 .github.io で良い (see 1)
 9. commitして、pushする。
 10. githubに移動。レポジトリのsettingに行って、pagesタブへ。
 11. "Your GitHub Pages site is currently being built from the /docs folder in the main branch."にする。
@@ -74,15 +74,15 @@ hugoテーマによっては、この時点で走らないものもありまし�
 
 ### 記事の書き方
 
-1. new_post(title = "記事の名前", ext = ".Rmd")
+1. new_post(title = "記事の名前", ext = ".Rmd")<br> Markdownで書くなら拡張子変えればok
 2. build_site()
 3. render_site()
 4. commit & push
 
 buildとrenderを忘れがちなので注意。
 
-写真を入れる場合は、/content/post/日付とタイトル/index.files に写真を入れるのがおすすめ。
-パスは ./index.files/hoge.png と、通常のMarkdownの通り書けば、workします。
+写真を入れる場合は、/content/post/日付とタイトル/index_files に写真を入れるのがおすすめ。
+パスは ./index_files/hoge.png と、通常のMarkdownの通り書けば、workします。
 
 ### 参考にしたもの
 
@@ -90,9 +90,10 @@ buildとrenderを忘れがちなので注意。
 
 * [神記事](https://ytake2.github.io/blog2/post/blogdown/)
 * [blogdownの公式?サイト](https://bookdown.org/yihui/blogdown/)
+* [同じテーマを使った方のブログ記事](https://blog.johtani.info/blog/2020/01/24/setting-hugo/)
 * 自分が選んだhugoテーマのdemoページやgithub。自分のwebサイトが動かないのは「必ず自分側に原因があるはず」という姿勢でやりつつ、適当に諦める。
 
-あとは、なんかとにかくネットサーフィンしてました
+あとは、とにかくネットサーフィンしてました
 
 ## 感想
 

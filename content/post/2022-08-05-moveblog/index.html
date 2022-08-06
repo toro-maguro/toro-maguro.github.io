@@ -60,7 +60,7 @@ new_site(theme = &quot;zhaohuabing/hugo-theme-cleanwhite&quot;) </code></pre>
 <li>new_site() を走らせると、「今見る？」みたいな質問がくるが、nを選択して拒否</li>
 <li>config.yamlを編集して、publishDir: “docs” を追加する。どこの行でもいけるっぽいが、インデントはなしで。この作業で、gh pagesのdocsから読むことに対応できる (<a href="https://bookdown.org/yihui/blogdown/rstudio-ide.html#fn13">FYI</a>)</li>
 <li>build_site(), render_site(), 最後にserve_site() と唱えると、webサイトがローカルに立ち上がる。すげえ。</li>
-<li>ルートディレクトリのconfig.yamlと、config.toml (themes/ (omit) / example/Site/config.toml) を編集して、baseurlを自分のgithub pagesを指定。今回のケースでは、<a href="https://" class="uri">https://</a> githubのアカウント名 .github.io で良い (see 1)</li>
+<li>ルートディレクトリのconfig.yamlと、config.toml (pathは themes/ (中略) / example/Site/config.toml) を編集して、baseurlを自分のgithub pagesを指定。今回のケースでは、<a href="https://" class="uri">https://</a> githubのアカウント名 .github.io で良い (see 1)</li>
 <li>commitして、pushする。</li>
 <li>githubに移動。レポジトリのsettingに行って、pagesタブへ。</li>
 <li>“Your GitHub Pages site is currently being built from the /docs folder in the main branch.”にする。</li>
@@ -72,14 +72,14 @@ config.yamlあたりは、沼ポイント多めに感じました。いったん
 <div id="記事の書き方" class="section level3">
 <h3>記事の書き方</h3>
 <ol style="list-style-type: decimal">
-<li>new_post(title = “記事の名前”, ext = “.Rmd”)</li>
+<li>new_post(title = “記事の名前”, ext = “.Rmd”)<br> Markdownで書くなら拡張子変えればok</li>
 <li>build_site()</li>
 <li>render_site()</li>
 <li>commit &amp; push</li>
 </ol>
 <p>buildとrenderを忘れがちなので注意。</p>
-<p>写真を入れる場合は、/content/post/日付とタイトル/index.files に写真を入れるのがおすすめ。
-パスは ./index.files/hoge.png と、通常のMarkdownの通り書けば、workします。</p>
+<p>写真を入れる場合は、/content/post/日付とタイトル/index_files に写真を入れるのがおすすめ。
+パスは ./index_files/hoge.png と、通常のMarkdownの通り書けば、workします。</p>
 </div>
 <div id="参考にしたもの" class="section level3">
 <h3>参考にしたもの</h3>
@@ -87,9 +87,10 @@ config.yamlあたりは、沼ポイント多めに感じました。いったん
 <ul>
 <li><a href="https://ytake2.github.io/blog2/post/blogdown/">神記事</a></li>
 <li><a href="https://bookdown.org/yihui/blogdown/">blogdownの公式?サイト</a></li>
+<li><a href="https://blog.johtani.info/blog/2020/01/24/setting-hugo/">同じテーマを使った方のブログ記事</a></li>
 <li>自分が選んだhugoテーマのdemoページやgithub。自分のwebサイトが動かないのは「必ず自分側に原因があるはず」という姿勢でやりつつ、適当に諦める。</li>
 </ul>
-<p>あとは、なんかとにかくネットサーフィンしてました</p>
+<p>あとは、とにかくネットサーフィンしてました</p>
 </div>
 </div>
 <div id="感想" class="section level2">
