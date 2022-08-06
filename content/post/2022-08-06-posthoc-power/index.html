@@ -1,0 +1,175 @@
+---
+title: 検出力の事後解析、不要説について
+author: ''
+date: '2022-08-06'
+slug: []
+categories:
+  - Epidemiology
+tags:
+  - Epidemiology
+  - power
+subtitle: 'Zhang, etal. 2019 "Post hoc power analysis: is it an informative and meaningful analysis?" を読んで、図も自分で再現したよ'
+description: ''
+image: ''
+showtoc: false
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="はじめに" class="section level1">
+<h1>はじめに</h1>
+<p>最近共著の論文でpower関連の話題に出会ったので。
+<a href="https://toro-maguro.github.io/post/2022-08-05-powerfunction/">前回</a>に引き続きpower関連の話です。</p>
+<p>とりあえず、これ読みましょう→ <a href="https://gpsych.bmj.com/content/32/4/e100069">Zhang, etal. 2019</a> <br>
+おもしろいです。</p>
+<p>Zhangらの主張は、こういう内容だと理解しました。</p>
+<ul>
+<li>母集団の真値と、標本値は異なる→ そもそもpost-hoc power analysisが概念的に違う。</li>
+<li>標本の値を使っているのに、あたかも真値かのようにpowerを計算するのは、精度よくない上に議論のミスリードをしてしまうこともあるのでは？</li>
+<li>post-hoc power analysisって何のためにやるのよ？なんか意味ある？</li>
+</ul>
+<p>感想</p>
+<ul>
+<li>言いたいこと、納得です。すごいなあ。</li>
+<li>けど、情報が乏しい中でbest availableなpowerの推論するなら、ある程度仕方ないのでは？-&gt; ベイズ使えって話ですかね？</li>
+</ul>
+</div>
+<div id="post-hoc-power-analysisを自分でも回してみた" class="section level1">
+<h1>post hoc power analysisを自分でも回してみた</h1>
+<p>読んだら自作できそうだったので、自分でも試してみます。
+設定はexposureもoutcomeも2値変数 (Zhangらはoutcomeが連続変数なので、少し違います。同じ議論ですが) です。</p>
+<p>用語の設定を簡単にしておくと、</p>
+<ul>
+<li>本来、prospective studyをする場合に事前にpower計算をして、リクルート数を決めますね。ここで得られるpowerをprospective powerとします。</li>
+<li>対して、研究して効果の指標を得た後に、「このpowerってどの程度なの？」と事後にpowerを計算するシチュエーションがあります。ここで得たpowerをpost-hoc powerとします。</li>
+</ul>
+<p>さて、今回実行した手順を簡単に言うとこんな形になります。</p>
+<ol style="list-style-type: decimal">
+<li>イベント発生割合・リスク比を決める。これらの値は母集団の持つ真の値とする。</li>
+<li>研究参加者数を決めて、1に従うデータを作成する。(神のみぞ知る値を知った状態で、サンプリングしてくるってイメージ)</li>
+<li>2で得たデータでリスク比を計算して、powerを計算する</li>
+<li>2-3を何度も繰り返してpost-hoc powerの分布を得る</li>
+</ol>
+<p>研究参加者数や効果/関連が大きくなるほど、prospective powerとpost-hoc powerは等しくなるはずです。
+では、研究参加者数が少なかったり、効果が小さい場合はどうなるのでしょう？実際に見ていきましょう。</p>
+<div id="ちょっとテクニカルな話" class="section level2">
+<h2>ちょっとテクニカルな話</h2>
+<p>コードの中身について</p>
+<ul>
+<li>Monte-Carlo simulation, default number of iterations = 10,000</li>
+<li>値を指定すると、ggplotで作った図を返します</li>
+<li>powerは{pwr.2p2n}で取得しました</li>
+</ul>
+<pre class="r"><code>pacman::p_load(pwr, tidyverse)
+
+Visualize_PosthocPowerAnalysis &lt;- function(n1, n2, prob1, prob2, itr=10000){
+  true_power_res &lt;- pwr.2p2n.test(h = ES.h(p1 = prob1, p2 = prob2),
+                                  n1 = n1, n2 = n2,
+                                  sig.level = 0.05,
+                                  alternative = &quot;two.sided&quot;)
+  true_power &lt;- true_power_res[[&quot;power&quot;]]
+  
+  posthoc_power &lt;- numeric(itr)
+  for (i in 1:itr) {
+    set.seed(i)
+    sample_prob1 &lt;- rbinom(1, n1, prob1)/n1
+    sample_prob2 &lt;- rbinom(1, n2, prob2)/n2
+    
+    posthoc_power_res &lt;- pwr.2p2n.test(h = ES.h(p1 = sample_prob1, p2 = sample_prob2),
+                                       n1 = n1, n2 = n2,
+                                       sig.level = 0.05,
+                                       alternative = &quot;two.sided&quot;)
+    posthoc_power[i] &lt;- posthoc_power_res[[&quot;power&quot;]]
+  }
+  
+  data &lt;- data.frame(posthoc_power = posthoc_power)
+  
+  # description for data viz
+  cha1 &lt;- sprintf(&quot;true value of event probability: control group=%.2f&quot;, prob1)
+  cha2 &lt;- sprintf(&quot;, exposed group=%.2f\n&quot;, prob2)
+  cha3 &lt;- sprintf(&quot;number of participants: control group=%d&quot;, n1)
+  cha4 &lt;- sprintf(&quot;, exposure group=%d\n&quot;, n2)
+  cha5 &lt;- sprintf(&quot;%.3f&quot;, true_power)
+  subtitle &lt;- paste0(cha1, cha2, cha3, cha4)
+  caption &lt;- paste0(&quot;hashed line: true power (=&quot;, cha5, &quot;)&quot;)
+  
+  # visualize data using ggplot2
+  plot &lt;- ggplot(data = data, aes(x = posthoc_power)) + 
+    geom_histogram() + 
+    geom_vline(xintercept = true_power, linetype = 2, size=1, colour = &quot;red&quot;) + 
+    xlim(c(0, 1)) +
+    labs(title = &quot;Histogram of post-hoc power, along with true power, based on Monte Carlo method&quot;,
+         subtitle = subtitle,
+         caption = caption) + 
+    theme_bw()
+
+  return(plot)
+}</code></pre>
+</div>
+<div id="関数の説明と実行" class="section level2">
+<h2>関数の説明と実行</h2>
+<p>説明が重複しますが、一応。</p>
+<blockquote>
+<p>コントロール群・曝露群の人数と、それぞれの真のイベント発生割合 (母集団でそのようなイベント発生割合が得られる、と仮定) を入力すると、true power (1つの値) &amp; post-hoc powerの分布 (1万回の試行から取得) を返します。なお、post-hoc powerは、真の値に従ってサンプリングされたデータから計算されます。</p>
+</blockquote>
+<p>引数の説明は以下の通りです。</p>
+<ul>
+<li>n1: コントロール群の人数</li>
+<li>n2: 曝露群の人数</li>
+<li>prob1: コントロール群のイベント発生割合</li>
+<li>prob2: 曝露群のイベント発生割合</li>
+</ul>
+<p>じゃあ、実際に図を描きながら、以下の内容を確認します。</p>
+<blockquote>
+<p>post-hoc powerは、a) 研究参加者数が少ない、または b) 効果が小さい場合、prospective powerに対してばらついた値を返す</p>
+</blockquote>
+<p>今回は例を3つ作成し、効果の値は一定としつつ人数を変えていきます。なお、効果の大小を変更しても同じ結論になります。</p>
+<div id="例1" class="section level3">
+<h3>例1</h3>
+<p>各群200人 (合計400人)、コントロール群でイベント発生割合が10%, 曝露群で15% (i.e., risk ratio = 1.5) とします。</p>
+<p>下の図を見てください。例1の設定では、真のpower (=prospective power) は0.33です。
+一方、この設定で得られたサンプリングされた集団で得たpost-hoc powerは0.10程度から0.90近くまで、非常に様々な値を取ります。
+また、post-hoc powerの最頻値もprospective powerから乖離していますね。</p>
+<p>これじゃ、post-hoc powerを見たところで、何も言えないなーって感じしちゃいますよね。</p>
+<pre class="r"><code>Visualize_PosthocPowerAnalysis(n1 = 200, n2 = 200, 
+                               prob1 = 0.1, prob2 = 0.15)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="例2" class="section level3">
+<h3>例2</h3>
+<p>もう少し人数を増やします。prospective powerが0.8近くになるよう、各群650人 (合計1300人) としました。この状況でも、post-hoc powerはかなりばらついた分布を取ります。</p>
+<pre class="r"><code>Visualize_PosthocPowerAnalysis(n1 = 650, n2 = 650, 
+                               prob1 = 0.1, prob2 = 0.15)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="例3" class="section level3">
+<h3>例3</h3>
+<p>やけくそ気味に各群1000人 (合計2000人) としました。prospective power=0.925です。</p>
+<p>こうなると、かなりprospective powerとpost-hoc powerが近くなることがわかります。
+ただprospective powerが0.925と、ほぼほぼ有意と判断される状況ですから、post-hoc power analysisをしたい状況ではないような気がします。</p>
+<pre class="r"><code>Visualize_PosthocPowerAnalysis(n1 = 1500, n2 = 1500, 
+                               prob1 = 0.1, prob2 = 0.15)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="まとめと感想" class="section level1">
+<h1>まとめと感想</h1>
+<p>まずは <a href="https://gpsych.bmj.com/content/32/4/e100069">Zhang, etal. 2019</a> を読んだ &amp; 自分でも図を作った感想。</p>
+<ul>
+<li>「標本集団で得られた標本値を、あたかも母集団の真の値かのように使ってpowerを計算するのは、概念的に間違っている」という指摘はごもっとも。</li>
+<li>post-hoc powerは、a) 研究参加者数が少ない、または b) 効果が小さい場合、prospective powerに対してばらついた値を返す、ということを再現。納得。</li>
+</ul>
+<p>したがって、査読コメントで「post-hoc power計算してください」は結構ミスリーディングな議論なんだなあと思いました。</p>
+<p><br></p>
+<p>でも先行研究が非常に乏しい中prospective powerを得たい場合って、post-hoc powerの計算とやってる行為自体は一緒では…? とも感じました。
+こういう場合、どうするのが正解なんでしょうか？</p>
+<p>まず、先行研究が乏しい状況では、そもそも真の値を考えること自体が変な気がしますね。ベイズ的議論が必要そう。あるいはもっとシンプルに、いくつか試すとか。例えばこんな感じ。</p>
+<ul>
+<li>真のリスク比はわからない→ いくつかのリスク比を試す</li>
+<li>power≥0.8を達成できる、許容されるサンプルサイズの幅を得る</li>
+</ul>
+<p>→ 証拠がそれほどない場合、<strong>powerを1つのpoint estimateで考えるのがよくないのであって、「真の値を知らない→ いくつかのシナリオを置こう」と、ばらつきを伴って理解するべきでは？</strong></p>
+<p>以上、最近の勉強でした。</p>
+</div>
