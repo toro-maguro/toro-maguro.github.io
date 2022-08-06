@@ -15,9 +15,9 @@
     
 
     
-    <meta name="title" content="ブログを引っ越して、RMarkdown &#43; Github pages環境にした" />
-    <meta property="og:title" content="ブログを引っ越して、RMarkdown &#43; Github pages環境にした" />
-    <meta property="twitter:title" content="ブログを引っ越して、RMarkdown &#43; Github pages環境にした" />
+    <meta name="title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
+    <meta property="og:title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
+    <meta property="twitter:title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
     
 
     
@@ -34,7 +34,7 @@
     <meta name="keyword"  content="Epidemiology, IT, cloud">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>ブログを引っ越して、RMarkdown &#43; Github pages環境にした | Sacoche</title>
+    <title>ブログを引っ越して、RStudio &#43; Github pages環境にした | Sacoche</title>
 
     <link rel="canonical" href="/post/2022-08-05-moveblog/">
 
@@ -175,7 +175,7 @@
                         </a>
                         
                     </div>
-                    <h1>ブログを引っ越して、RMarkdown &#43; Github pages環境にした</h1>
+                    <h1>ブログを引っ越して、RStudio &#43; Github pages環境にした</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         
@@ -218,12 +218,14 @@
 <h2>引っ越しした理由</h2>
 <p>NOTE: これは完全に備忘録で、自分の読者像的にマッチしている人はおそらくいません笑</p>
 <p><br></p>
-<p>1番の理由は、gitとgithubを勉強している途中でやりたくなったから、でしかありません。</p>
-<p>ブログに対して求めるものは次の2点です。</p>
-<ul>
-<li>RStudioで .Rmd で分析を含む記事を書きたい。わざわざ、はてなブログに行くのは面倒なので、RStudioで完結してほしい。</li>
-<li>そのままknitして .html を出力、そのままgithubにpushして記事を更新したい。(実際はknitすらしてませんが)</li>
-</ul>
+<p>1番の理由は、gitとgithubを勉強している途中でやりたくなったから、です。
+そもそも誰かに検索して届いてほしい、という発想があまりないので、はてなブログだろうと何でも良いというのも関係します。</p>
+<p>僕がブログに対して求めるものは次の2点です。</p>
+<ol style="list-style-type: decimal">
+<li>RStudioのみを使って分析を含む記事を.Rmdで書きたい。わざわざ、はてなブログに行くのは面倒なので、RStudioで完結してほしい。</li>
+<li>gitを使ってバージョン管理したい</li>
+</ol>
+<p>そこで、{blogdown}をRStudioで実行し、RStudio→ github→ github pagesという形で環境を作りました。</p>
 <p>執筆環境の前後比較はこんな感じ</p>
 <div class="figure">
 <img src="https://toro-maguro.github.io/post/2022-08-05-moveblog/index_files/workenvironment.png" alt="" />
