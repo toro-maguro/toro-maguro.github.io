@@ -28,6 +28,11 @@ source: <a href="https://www.e-stat.go.jp/dbview?sid=0003442017">e-stat</a></p>
 <li>incomeは交絡: incomeが少ないほどx and yが発生しやすい (i.e., confounding bias away from the null)</li>
 <li>引数: n_sample=人数、risk_ratio=曝露によるリスク比</li>
 </ul>
+</div>
+<div id="関数" class="section level1">
+<h1>関数</h1>
+<div id="関数の作成" class="section level2">
+<h2>関数の作成</h2>
 <pre class="r"><code>pacman::p_load(tidyverse)
 # incomeデータを国民生活基礎調査に基づいて作成
 MakeIncomeData &lt;- function(){
@@ -49,7 +54,7 @@ MakeIncomeData &lt;- function(){
 # incomeが少ないほどx and yが発生しやすい-&gt; confounding bias away from the null
 # 引数: n_sample=人数、risk_ratio=曝露によるリスク比
 MakeData &lt;- function(n_sample=1000, risk_ratio=1.5){
-  set.seed(1)
+  set.seed(1234)
   # income data &amp; income_threshold
   income_cat &lt;- MakeIncomeData()
   income_threshold &lt;- c(0, 0.012, 0.064, 0.127, 0.19, 0.259, 0.326, 0.397, 0.454, 
@@ -106,16 +111,19 @@ MakeData &lt;- function(n_sample=1000, risk_ratio=1.5){
   
   return(df)
 }</code></pre>
+</div>
+<div id="関数の確認" class="section level2">
+<h2>関数の確認</h2>
 <p>使い方はこんな感じ</p>
 <pre class="r"><code>df &lt;- MakeData(n_sample = 1000, risk_ratio = 2.0)
 head(df)</code></pre>
-<pre><code>##   ID sex     income income_cat x y
-## 1  1   0  4935901.6       &lt;700 0 0
-## 2  2   0  6483597.6       &lt;700 0 0
-## 3  3   1  3433457.3       &lt;400 0 0
-## 4  4   1 13313145.5       ≥700 0 0
-## 5  5   0  1095968.7       &lt;250 1 1
-## 6  6   1   541147.1       &lt;250 1 0</code></pre>
+<pre><code>##   ID sex  income income_cat x y
+## 1  1   0 9057019       ≥700 1 0
+## 2  2   1 4096104       &lt;700 0 0
+## 3  3   1 1309235       &lt;250 0 0
+## 4  4   1 3299529       &lt;400 0 0
+## 5  5   1 7530942       ≥700 0 0
+## 6  6   1 3349626       &lt;400 0 1</code></pre>
 <p>所得の分布はこの通り。200-300万円程度でピークが来ていて、右に長い裾を引くという日本世帯収入の特徴をつかめていると思います。</p>
 <pre class="r"><code>mean_income &lt;- mean(df$income)
 median_income &lt;- median(df$income)
@@ -139,8 +147,86 @@ ggplot(data = df, aes(x = income)) +
 <p class="caption">所得の分布状況 (令和元年度国民生活基礎調査)</p>
 </div>
 <p>国民生活基礎調査をもとにデータをシミュレーションしているから当然なんだけど、いいデモデータになるでしょ？</p>
+<p>一応、xとyとの関連も確認。
+単純にxとyをlog-binomialで回帰分析したモデルと、収入を4カテゴリ (250万円未満 / 250-400万円 / 400-700万円 / 700万円以上) に分けて調整したモデルの2つを実行します。</p>
+<pre class="r"><code>crude &lt;- glm(y ~ x, data = df, family = binomial(link = &quot;log&quot;))
+
+summary(crude)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x, family = binomial(link = &quot;log&quot;), data = df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.0579  -0.6398  -0.6398  -0.6398   1.8368  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -1.68688    0.07274  -23.19  &lt; 2e-16 ***
+## x            0.83958    0.11501    7.30 2.88e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1068.8  on 999  degrees of freedom
+## Residual deviance: 1026.6  on 998  degrees of freedom
+## AIC: 1030.6
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>exp(coef(crude)) # risk ratio</code></pre>
+<pre><code>## (Intercept)           x 
+##   0.1850962   2.3153989</code></pre>
+<pre class="r"><code>adjusted &lt;- glm(y ~ x + income_cat, data = df, family = binomial(link = &quot;log&quot;))
+
+summary(adjusted)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = y ~ x + income_cat, family = binomial(link = &quot;log&quot;), 
+##     data = df)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.2228  -0.7399  -0.6391  -0.5278   2.0200  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)     -1.4293     0.1049 -13.628  &lt; 2e-16 ***
+## x                0.7879     0.1149   6.856 7.08e-12 ***
+## income_cat&lt;400  -0.2383     0.1557  -1.531   0.1259    
+## income_cat&lt;700  -0.2596     0.1400  -1.855   0.0636 .  
+## income_cat≥700  -0.6109     0.1755  -3.481   0.0005 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1068.8  on 999  degrees of freedom
+## Residual deviance: 1012.8  on 995  degrees of freedom
+## AIC: 1022.8
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>exp(coef(adjusted)) # risk ratio</code></pre>
+<pre><code>##    (Intercept)              x income_cat&lt;400 income_cat&lt;700 income_cat≥700 
+##      0.2394715      2.1987082      0.7879789      0.7713427      0.5428814</code></pre>
+<pre class="r"><code>exp(confint(adjusted)) # 95%CI</code></pre>
+<pre><code>##                    2.5 %    97.5 %
+## (Intercept)    0.1934482 0.2914440
+## x              1.7452555 2.7416437
+## income_cat&lt;400 0.5720032 1.0622755
+## income_cat&lt;700 0.5838765 1.0102595
+## income_cat≥700 0.3800548 0.7554868</code></pre>
+<p>risk ratioは2.0で設定したところ、データではRR=2.20 になっていました。
+おそらく想定した通りにちゃんと動いているでしょう。</p>
+<p>また、交絡に関して確認すると、
+crudeだと RR=2.32 で、収入を調整したadjustedだと RR=2.20 となっていました。
+したがって、収入がbias away from the nullになっていることも確認できました。</p>
 <p><br></p>
-<p>実際に動かすときは、この関数を.Rで作成し、解析コードの.R/.Rmdから読み出すといいでしょう。</p>
+</div>
+</div>
+<div id="実際に使う場合のtips" class="section level1">
+<h1>実際に使う場合のtips</h1>
+<p>実際にこの関数を動かすときは、関数を.Rで作成して保存し、解析コードの.R/.Rmdから読み出すといいでしょう。</p>
 <p>例として、以下のディレクトリ構造でコードを書いていたとします。</p>
 <p>index.Rmd (← 今書いてるドキュメント) <br>
 └ index_files/makedata.R <br></p>

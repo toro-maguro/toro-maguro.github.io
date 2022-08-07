@@ -27,6 +27,10 @@ source: [e-stat](https://www.e-stat.go.jp/dbview?sid=0003442017)
 * incomeは交絡: incomeが少ないほどx and yが発生しやすい (i.e., confounding bias away from the null)
 * 引数: n_sample=人数、risk_ratio=曝露によるリスク比
 
+# 関数
+
+## 関数の作成
+
 ```{r}
 pacman::p_load(tidyverse)
 # incomeデータを国民生活基礎調査に基づいて作成
@@ -49,7 +53,7 @@ MakeIncomeData <- function(){
 # incomeが少ないほどx and yが発生しやすい-> confounding bias away from the null
 # 引数: n_sample=人数、risk_ratio=曝露によるリスク比
 MakeData <- function(n_sample=1000, risk_ratio=1.5){
-  set.seed(1)
+  set.seed(1234)
   # income data & income_threshold
   income_cat <- MakeIncomeData()
   income_threshold <- c(0, 0.012, 0.064, 0.127, 0.19, 0.259, 0.326, 0.397, 0.454, 
@@ -108,6 +112,8 @@ MakeData <- function(n_sample=1000, risk_ratio=1.5){
 }
 ```
 
+## 関数の確認
+
 使い方はこんな感じ
 
 ```{r}
@@ -142,9 +148,43 @@ ggplot(data = df, aes(x = income)) +
 
 国民生活基礎調査をもとにデータをシミュレーションしているから当然なんだけど、いいデモデータになるでしょ？
 
+一応、xとyとの関連も確認。
+単純にxとyをlog-binomialで回帰分析したモデルと、収入を4カテゴリ (250万円未満 / 250-400万円 / 400-700万円 / 700万円以上) に分けて調整したモデルの2つを実行します。
+
+```{r, message=F, warning=FALSE}
+crude <- glm(y ~ x, data = df, family = binomial(link = "log"))
+
+summary(crude)
+exp(coef(crude)) # risk ratio
+```
+
+
+```{r, message=F, warning=FALSE}
+adjusted <- glm(y ~ x + income_cat, data = df, family = binomial(link = "log"))
+
+summary(adjusted)
+
+exp(coef(adjusted)) # risk ratio
+exp(confint(adjusted)) # 95%CI
+```
+
+```{r, echo=F}
+RR_crude <- format(round(exp(coef(crude))[2], digits = 2), nsmall = 2)
+RR_adjusted <- format(round(exp(coef(adjusted))[2], digits = 2), nsmall = 2)
+```
+
+risk ratioは2.0で設定したところ、データではRR=`r RR_adjusted` になっていました。
+おそらく想定した通りにちゃんと動いているでしょう。
+
+また、交絡に関して確認すると、
+crudeだと RR=`r RR_crude` で、収入を調整したadjustedだと RR=`r RR_adjusted` となっていました。
+したがって、収入がbias away from the nullになっていることも確認できました。
+
 <br>
 
-実際に動かすときは、この関数を.Rで作成し、解析コードの.R/.Rmdから読み出すといいでしょう。
+# 実際に使う場合のtips
+
+実際にこの関数を動かすときは、関数を.Rで作成して保存し、解析コードの.R/.Rmdから読み出すといいでしょう。
 
 例として、以下のディレクトリ構造でコードを書いていたとします。
 
