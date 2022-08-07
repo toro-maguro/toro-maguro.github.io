@@ -1,0 +1,150 @@
+---
+title: 世帯収入の模擬データを作る
+author: ''
+date: '2022-08-07'
+slug: []
+categories:
+  - Epidemiology
+  - 自作関数
+tags:
+  - Epidemiology
+subtitle: ''
+description: ''
+image: ''
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="やること" class="section level1">
+<h1>やること</h1>
+<p>e-statの令和元年度国民生活基礎調査に基づいて、世帯収入のダミーデータを生む関数を作ります。<br>
+source: <a href="https://www.e-stat.go.jp/dbview?sid=0003442017">e-stat</a></p>
+<p>なお、単身世帯・性別等の個別化された世帯収入ではなく、平均的な日本世帯収入を生むだけです。
+個人の世帯収入として扱うのは不十分だと思いますが、データ遊びする分には十分遊べるかと思います。</p>
+<p>関数の内容は以下の通りです。</p>
+<ul>
+<li>ID, sex, income (confounder), x (binary exposure), y (binary outcome) を含むデータを作成する</li>
+<li>incomeは交絡: incomeが少ないほどx and yが発生しやすい (i.e., confounding bias away from the null)</li>
+<li>引数: n_sample=人数、risk_ratio=曝露によるリスク比</li>
+</ul>
+<pre class="r"><code>pacman::p_load(tidyverse)
+# incomeデータを国民生活基礎調査に基づいて作成
+MakeIncomeData &lt;- function(){
+  income_cat &lt;- c(1:25)
+  min_income &lt;- c(0, 500000, 1000000, 1500000, 2000000, 2500000, 3000000, 3500000, 
+                  4000000, 4500000, 5000000, 5500000, 6000000, 6500000, 7000000, 7500000,
+                  8000000, 8500000, 9000000, 9500000, 10000000, 11000000, 12000000, 15000000, 20000000)
+  max_income &lt;- c(499999, 999999, 1499999, 1999999, 2499999, 2999999, 3499999, 3999999,
+                  4499999, 4999999, 5499999, 5999999, 6499999, 6999999, 7499999, 7999999, 8499999,
+                  8999999, 9499999, 9999999, 10999999, 11999999, 14999999, 19999999, 100000000)
+  
+  df_income &lt;- data.frame(income_cat = income_cat,
+                          min_income = min_income, 
+                          max_income = max_income)
+  return(df_income)
+}
+
+# ID, sex, income (confounder), x (binary exposure), y (binary outcome) を含むデータを作成する 
+# incomeが少ないほどx and yが発生しやすい-&gt; confounding bias away from the null
+# 引数: n_sample=人数、risk_ratio=曝露によるリスク比
+MakeData &lt;- function(n_sample=1000, risk_ratio=1.5){
+  set.seed(1)
+  # income data &amp; income_threshold
+  income_cat &lt;- MakeIncomeData()
+  income_threshold &lt;- c(0, 0.012, 0.064, 0.127, 0.19, 0.259, 0.326, 0.397, 0.454, 
+                        0.51, 0.559, 0.608, 0.646, 0.692, 0.726, 0.759, 0.788,
+                        0.814, 0.837, 0.859, 0.878, 0.909, 0.928, 0.966, 0.987, 1)
+  
+  # make data frame
+  df &lt;- data.frame(ID = 1:n_sample)
+  df &lt;- df %&gt;% 
+    mutate(sex = rbinom(nrow(df), 1, 0.5)) %&gt;% 
+    mutate(prob_income = runif(n_sample, min=0, max=1)) %&gt;% 
+    mutate(income_cat = cut(prob_income,
+                            breaks = income_threshold,
+                            right = TRUE, 
+                            include.lowest = TRUE,
+                            labels = c(1:25)
+    )) %&gt;% 
+    mutate(income_cat = as.integer(income_cat))
+  
+  df &lt;- left_join(df, income_cat, by = &quot;income_cat&quot;) %&gt;% 
+    select(ID, sex, income_cat, min_income, max_income) %&gt;% 
+    mutate(income = runif(n_sample, min = min_income, max = max_income)) %&gt;% 
+    select(ID, sex, income)
+  
+  df &lt;- df %&gt;% 
+    mutate(income_cat = case_when(
+      income &lt; 2500000 ~ &quot;&lt;250&quot;,
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ &quot;&lt;400&quot;,
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ &quot;&lt;700&quot;,
+      income &gt;= 7000000 ~ &quot;≥700&quot;
+    ),
+    income_cat = factor(income_cat, levels = c(&quot;&lt;250&quot;, &quot;&lt;400&quot;, &quot;&lt;700&quot;, &quot;≥700&quot;))) 
+  
+  # 曝露の発生確率と曝露(0/1)を定義
+  df &lt;- df %&gt;% 
+    mutate(x_prob = case_when(
+      income &lt; 2500000 ~ 0.25,
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ 0.2,
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ 0.15,
+      income &gt;= 7000000 ~ 0.1
+    )) %&gt;% 
+    mutate(x = rbinom(nrow(df), 1, x_prob)) # 定めた曝露発生確率の二項分布に従って曝露を決定
+  
+  # 曝露しているとイベント発生確率がrisk_ratio倍になる
+  df &lt;- df %&gt;% 
+    mutate(y_prob = case_when(
+      income &lt; 2500000 ~ 0.25 * (1 + x*(risk_ratio-1)),
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ 0.2 * (1 + x*(risk_ratio-1)),
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ 0.15 * (1 + x*(risk_ratio-1)),
+      income &gt;= 7000000 ~ 0.1 * (1 + x*(risk_ratio-1))
+    )) %&gt;% 
+    mutate(y = rbinom(nrow(df), 1, y_prob)) %&gt;% 
+    select(-x_prob, -y_prob)
+  
+  return(df)
+}</code></pre>
+<p>使い方はこんな感じ</p>
+<pre class="r"><code>df &lt;- MakeData(n_sample = 1000, risk_ratio = 2.0)
+head(df)</code></pre>
+<pre><code>##   ID sex     income income_cat x y
+## 1  1   0  4935901.6       &lt;700 0 0
+## 2  2   0  6483597.6       &lt;700 0 0
+## 3  3   1  3433457.3       &lt;400 0 0
+## 4  4   1 13313145.5       ≥700 0 0
+## 5  5   0  1095968.7       &lt;250 1 1
+## 6  6   1   541147.1       &lt;250 1 0</code></pre>
+<p>所得の分布はこの通り。200-300万円程度でピークが来ていて、右に長い裾を引くという日本世帯収入の特徴をつかめていると思います。</p>
+<pre class="r"><code>mean_income &lt;- mean(df$income)
+median_income &lt;- median(df$income)
+
+mean_text &lt;- paste0(&quot;mean: &quot;, as.character(round((mean_income/1000000), digits=2)), &quot; million yen&quot;)
+median_text &lt;- paste0(&quot;median: &quot;, as.character(round((median_income/1000000), digits=2)), &quot; million yen&quot;)
+
+subtitle &lt;- paste0(median_text, &quot; (orange), &quot;, mean_text, &quot; (skyblue)&quot;)
+
+ggplot(data = df, aes(x = income)) + 
+  geom_histogram() + 
+  geom_vline(xintercept = mean_income, linetype = 2, colour = &quot;skyblue&quot;) + 
+  geom_vline(xintercept = median_income, linetype = 2, colour = &quot;orange&quot;) + 
+  theme_bw() + 
+  xlim(c(0, 20000000)) + 
+  ggtitle(&quot;simulated distribution of income&quot;, subtitle)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>実際の分布は次のとおりです (source: <a href="https://www.mhlw.go.jp/toukei/saikin/hw/k-tyosa/k-tyosa19/index.html">URL</a>)。</p>
+<div class="figure">
+<img src="{{< blogdown/postref >}}index_files/income.png" alt="" />
+<p class="caption">所得の分布状況 (令和元年度国民生活基礎調査)</p>
+</div>
+<p>国民生活基礎調査をもとにデータをシミュレーションしているから当然なんだけど、いいデモデータになるでしょ？</p>
+<p><br></p>
+<p>実際に動かすときは、この関数を.Rで作成し、解析コードの.R/.Rmdから読み出すといいでしょう。</p>
+<p>例として、以下のディレクトリ構造でコードを書いていたとします。</p>
+<p>index.Rmd (← 今書いてるドキュメント) <br>
+└ index_files/makedata.R <br></p>
+<p>こういう構造の場合、以下のコードで.Rをソースコードとして読むことが可能です。</p>
+<pre class="r"><code>source(&quot;./index_files/makedata.R&quot;) # 今回使う自作関数をまとめた.Rファイル</code></pre>
+<p>そんじゃあね。</p>
+</div>

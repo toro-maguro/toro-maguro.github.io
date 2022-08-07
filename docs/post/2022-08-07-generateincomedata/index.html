@@ -15,9 +15,9 @@
     
 
     
-    <meta name="title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
-    <meta property="og:title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
-    <meta property="twitter:title" content="ブログを引っ越して、RStudio &#43; Github pages環境にした" />
+    <meta name="title" content="世帯収入の模擬データを作る" />
+    <meta property="og:title" content="世帯収入の模擬データを作る" />
+    <meta property="twitter:title" content="世帯収入の模擬データを作る" />
     
 
     
@@ -34,9 +34,9 @@
     <meta name="keyword"  content="Epidemiology, IT, cloud">
     <link rel="shortcut icon" href="/img/favicon.ico">
 
-    <title>ブログを引っ越して、RStudio &#43; Github pages環境にした | Sacoche</title>
+    <title>世帯収入の模擬データを作る | Sacoche</title>
 
-    <link rel="canonical" href="/post/2022-08-05-moveblog/">
+    <link rel="canonical" href="/post/2022-08-07-generateincomedata/">
 
     
     
@@ -174,12 +174,12 @@
                 <div class="post-heading">
                     <div class="tags">
                         
-                        <a class="tag" href="/tags/others" title="Others">
-                            Others
+                        <a class="tag" href="/tags/epidemiology" title="Epidemiology">
+                            Epidemiology
                         </a>
                         
                     </div>
-                    <h1>ブログを引っ越して、RStudio &#43; Github pages環境にした</h1>
+                    <h1>世帯収入の模擬データを作る</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         
@@ -188,7 +188,7 @@
                                     Sacoche
                              
                             on 
-                            Friday, August 5, 2022
+                            Sunday, August 7, 2022
                             
                             
                             
@@ -215,96 +215,140 @@
 
                 
                 
-<script src="https://toro-maguro.github.io/post/2022-08-05-moveblog/index_files/header-attrs/header-attrs.js"></script>
+<script src="https://toro-maguro.github.io/post/2022-08-07-generateincomedata/index_files/header-attrs/header-attrs.js"></script>
 
 
-<div id="引っ越しした理由" class="section level2">
-<h2>引っ越しした理由</h2>
-<p>NOTE: これは完全に備忘録で、自分の読者像的にマッチしている人はおそらくいません。</p>
-<p><br></p>
-<p>1番の理由は、gitとgithubを勉強している途中でやりたくなったから、です。
-そもそも誰かに検索されたい、見知らぬ誰かに届いてほしい、という発想があまりないので、はてなブログだろうと何でも良いというのも関係します。
-そもそも公開し始めた理由は、知り合いに共有するときに.Rmdや.htmlだと共有しにくいということが始まりだったので。</p>
-<p>僕がこのブログに対して求めるものは次の2点です。</p>
-<ol style="list-style-type: decimal">
-<li>RStudioのみを使って分析を含む記事を.Rmdで書きたい。わざわざ、はてなブログに行くのは面倒なので、RStudioで完結してほしい。</li>
-<li>gitを使ってバージョン管理したい (勉強のため使いたい)</li>
-</ol>
-<p>そこで、{blogdown}をRStudioで実行し、RStudio→ github→ github pagesという形で環境を作りました。</p>
-<p>執筆環境の前後比較はこんな感じ</p>
+<div id="やること" class="section level1">
+<h1>やること</h1>
+<p>e-statの令和元年度国民生活基礎調査に基づいて、世帯収入のダミーデータを生む関数を作ります。<br>
+source: <a href="https://www.e-stat.go.jp/dbview?sid=0003442017">e-stat</a></p>
+<p>なお、単身世帯・性別等の個別化された世帯収入ではなく、平均的な日本世帯収入を生むだけです。
+個人の世帯収入として扱うのは不十分だと思いますが、データ遊びする分には十分遊べるかと思います。</p>
+<p>関数の内容は以下の通りです。</p>
+<ul>
+<li>ID, sex, income (confounder), x (binary exposure), y (binary outcome) を含むデータを作成する</li>
+<li>incomeは交絡: incomeが少ないほどx and yが発生しやすい (i.e., confounding bias away from the null)</li>
+<li>引数: n_sample=人数、risk_ratio=曝露によるリスク比</li>
+</ul>
+<pre class="r"><code>pacman::p_load(tidyverse)
+# incomeデータを国民生活基礎調査に基づいて作成
+MakeIncomeData &lt;- function(){
+  income_cat &lt;- c(1:25)
+  min_income &lt;- c(0, 500000, 1000000, 1500000, 2000000, 2500000, 3000000, 3500000, 
+                  4000000, 4500000, 5000000, 5500000, 6000000, 6500000, 7000000, 7500000,
+                  8000000, 8500000, 9000000, 9500000, 10000000, 11000000, 12000000, 15000000, 20000000)
+  max_income &lt;- c(499999, 999999, 1499999, 1999999, 2499999, 2999999, 3499999, 3999999,
+                  4499999, 4999999, 5499999, 5999999, 6499999, 6999999, 7499999, 7999999, 8499999,
+                  8999999, 9499999, 9999999, 10999999, 11999999, 14999999, 19999999, 100000000)
+  
+  df_income &lt;- data.frame(income_cat = income_cat,
+                          min_income = min_income, 
+                          max_income = max_income)
+  return(df_income)
+}
+
+# ID, sex, income (confounder), x (binary exposure), y (binary outcome) を含むデータを作成する 
+# incomeが少ないほどx and yが発生しやすい-&gt; confounding bias away from the null
+# 引数: n_sample=人数、risk_ratio=曝露によるリスク比
+MakeData &lt;- function(n_sample=1000, risk_ratio=1.5){
+  set.seed(1)
+  # income data &amp; income_threshold
+  income_cat &lt;- MakeIncomeData()
+  income_threshold &lt;- c(0, 0.012, 0.064, 0.127, 0.19, 0.259, 0.326, 0.397, 0.454, 
+                        0.51, 0.559, 0.608, 0.646, 0.692, 0.726, 0.759, 0.788,
+                        0.814, 0.837, 0.859, 0.878, 0.909, 0.928, 0.966, 0.987, 1)
+  
+  # make data frame
+  df &lt;- data.frame(ID = 1:n_sample)
+  df &lt;- df %&gt;% 
+    mutate(sex = rbinom(nrow(df), 1, 0.5)) %&gt;% 
+    mutate(prob_income = runif(n_sample, min=0, max=1)) %&gt;% 
+    mutate(income_cat = cut(prob_income,
+                            breaks = income_threshold,
+                            right = TRUE, 
+                            include.lowest = TRUE,
+                            labels = c(1:25)
+    )) %&gt;% 
+    mutate(income_cat = as.integer(income_cat))
+  
+  df &lt;- left_join(df, income_cat, by = &quot;income_cat&quot;) %&gt;% 
+    select(ID, sex, income_cat, min_income, max_income) %&gt;% 
+    mutate(income = runif(n_sample, min = min_income, max = max_income)) %&gt;% 
+    select(ID, sex, income)
+  
+  df &lt;- df %&gt;% 
+    mutate(income_cat = case_when(
+      income &lt; 2500000 ~ &quot;&lt;250&quot;,
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ &quot;&lt;400&quot;,
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ &quot;&lt;700&quot;,
+      income &gt;= 7000000 ~ &quot;≥700&quot;
+    ),
+    income_cat = factor(income_cat, levels = c(&quot;&lt;250&quot;, &quot;&lt;400&quot;, &quot;&lt;700&quot;, &quot;≥700&quot;))) 
+  
+  # 曝露の発生確率と曝露(0/1)を定義
+  df &lt;- df %&gt;% 
+    mutate(x_prob = case_when(
+      income &lt; 2500000 ~ 0.25,
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ 0.2,
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ 0.15,
+      income &gt;= 7000000 ~ 0.1
+    )) %&gt;% 
+    mutate(x = rbinom(nrow(df), 1, x_prob)) # 定めた曝露発生確率の二項分布に従って曝露を決定
+  
+  # 曝露しているとイベント発生確率がrisk_ratio倍になる
+  df &lt;- df %&gt;% 
+    mutate(y_prob = case_when(
+      income &lt; 2500000 ~ 0.25 * (1 + x*(risk_ratio-1)),
+      income &gt;= 2500000 &amp; income &lt; 4000000 ~ 0.2 * (1 + x*(risk_ratio-1)),
+      income &gt;= 4000000 &amp; income &lt; 7000000 ~ 0.15 * (1 + x*(risk_ratio-1)),
+      income &gt;= 7000000 ~ 0.1 * (1 + x*(risk_ratio-1))
+    )) %&gt;% 
+    mutate(y = rbinom(nrow(df), 1, y_prob)) %&gt;% 
+    select(-x_prob, -y_prob)
+  
+  return(df)
+}</code></pre>
+<p>使い方はこんな感じ</p>
+<pre class="r"><code>df &lt;- MakeData(n_sample = 1000, risk_ratio = 2.0)
+head(df)</code></pre>
+<pre><code>##   ID sex     income income_cat x y
+## 1  1   0  4935901.6       &lt;700 0 0
+## 2  2   0  6483597.6       &lt;700 0 0
+## 3  3   1  3433457.3       &lt;400 0 0
+## 4  4   1 13313145.5       ≥700 0 0
+## 5  5   0  1095968.7       &lt;250 1 1
+## 6  6   1   541147.1       &lt;250 1 0</code></pre>
+<p>所得の分布はこの通り。200-300万円程度でピークが来ていて、右に長い裾を引くという日本世帯収入の特徴をつかめていると思います。</p>
+<pre class="r"><code>mean_income &lt;- mean(df$income)
+median_income &lt;- median(df$income)
+
+mean_text &lt;- paste0(&quot;mean: &quot;, as.character(round((mean_income/1000000), digits=2)), &quot; million yen&quot;)
+median_text &lt;- paste0(&quot;median: &quot;, as.character(round((median_income/1000000), digits=2)), &quot; million yen&quot;)
+
+subtitle &lt;- paste0(median_text, &quot; (orange), &quot;, mean_text, &quot; (skyblue)&quot;)
+
+ggplot(data = df, aes(x = income)) + 
+  geom_histogram() + 
+  geom_vline(xintercept = mean_income, linetype = 2, colour = &quot;skyblue&quot;) + 
+  geom_vline(xintercept = median_income, linetype = 2, colour = &quot;orange&quot;) + 
+  theme_bw() + 
+  xlim(c(0, 20000000)) + 
+  ggtitle(&quot;simulated distribution of income&quot;, subtitle)</code></pre>
+<p><img src="https://toro-maguro.github.io/post/2022-08-07-generateincomedata/index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>実際の分布は次のとおりです (source: <a href="https://www.mhlw.go.jp/toukei/saikin/hw/k-tyosa/k-tyosa19/index.html">URL</a>)。</p>
 <div class="figure">
-<img src="https://toro-maguro.github.io/post/2022-08-05-moveblog/index_files/workenvironment.png" alt="" />
-<p class="caption">environment</p>
+<img src="https://toro-maguro.github.io/post/2022-08-07-generateincomedata/index_files/income.png" alt="" />
+<p class="caption">所得の分布状況 (令和元年度国民生活基礎調査)</p>
 </div>
-</div>
-<div id="blogdownで記事を書いていく" class="section level2">
-<h2>{blogdown}で記事を書いていく</h2>
-<p>n番煎じなので、特に解説はなしです。ぽんこつ文章読まないマンの僕のした手順だけ書きます。</p>
-<div id="初期設定" class="section level3">
-<h3>初期設定</h3>
-<p>githubのSSH設定やRStudioとgithubとの関係等の説明は省略します。</p>
-<ol style="list-style-type: decimal">
-<li>githubでレポジトリを作成する。レポジトリを “githubのアカウント名.github.io” にすると、非常に楽。(ルート相対パスの問題が生じるのを回避)</li>
-<li>レポジトリを作ったら出てくるclone用のリンク (httpsでもsshでもok) をコピーしておく</li>
-<li>RStudioで New Project &gt; Version Control &gt; Gitと進み、2を貼り付ける</li>
-<li>new_site()を走らせる (下を参照)。</li>
-</ol>
-<pre class="r"><code># blogdownのインストール
-install.packages(&quot;blogdown&quot;)
-
-# hugoのインストール
-library(blogdown)
-blogdown::install_hugo()
-
-# 新しいサイトを作る
-## themeを指定して、好きなhugoテーマにできる。
-new_site(theme = &quot;zhaohuabing/hugo-theme-cleanwhite&quot;) </code></pre>
-<ol start="5" style="list-style-type: decimal">
-<li>new_site() を走らせると、「今見る？」みたいな質問がくるが、nを選択して拒否</li>
-<li>config.yamlを編集して、publishDir: “docs” を追加する。どこの行でもいけるっぽいが、インデントはなしで。この作業で、gh pagesのdocsから読むことに対応できる (<a href="https://bookdown.org/yihui/blogdown/rstudio-ide.html#fn13">FYI</a>)</li>
-<li>build_site(), render_site(), 最後にserve_site() と唱えると、webサイトがローカルに立ち上がる。すげえ。</li>
-<li>ルートディレクトリのconfig.yamlと、config.toml (pathは themes/ (中略) / example/Site/config.toml) を編集して、baseurlを自分のgithub pagesを指定。今回のケースでは、<a href="https://" class="uri">https://</a> githubのアカウント名 .github.io で良い (see 1)</li>
-<li>commitして、pushする。</li>
-<li>githubに移動。レポジトリのsettingに行って、pagesタブへ。</li>
-<li>“Your GitHub Pages site is currently being built from the /docs folder in the main branch.”にする。</li>
-</ol>
-<p>これで一旦見れるようになるはず。まずはここをチェックポイントとすると良さげです。
-config.yamlあたりは、沼ポイント多めに感じました。いったん動くものを作ってから編集することがおすすめ。(ほんと常識がなさすぎて、いろいろとわからん)</p>
-<p>hugoテーマによっては、この時点で走らないものもありました。おそらく自分のせいなんですが、とっとと諦めました。</p>
-</div>
-<div id="記事の書き方" class="section level3">
-<h3>記事の書き方</h3>
-<ol style="list-style-type: decimal">
-<li>new_post(title = “記事の名前”, ext = “.Rmd”)<br> Markdownで書くなら拡張子変えればok</li>
-<li>build_site()</li>
-<li>render_site()</li>
-<li>commit &amp; push</li>
-</ol>
-<p>buildとrenderを忘れがちなので注意。</p>
-<p>写真を入れる場合は、/content/post/日付とタイトル/index_files に写真を入れるのがおすすめ。
-パスは ./index_files/hoge.png と、通常のMarkdownの通り書けば、workします。</p>
-</div>
-<div id="参考にしたもの" class="section level3">
-<h3>参考にしたもの</h3>
-<p>参考にしたものは次の記事たち。</p>
-<ul>
-<li><a href="https://ytake2.github.io/blog2/post/blogdown/">神記事</a></li>
-<li><a href="https://bookdown.org/yihui/blogdown/">blogdownの公式?サイト</a></li>
-<li><a href="https://blog.johtani.info/blog/2020/01/24/setting-hugo/">同じテーマを使った方のブログ記事</a></li>
-<li>自分が選んだhugoテーマのdemoページやgithub。自分のwebサイトが動かないのは「必ず自分側に原因があるはず」という姿勢でやりつつ、適当に諦める。</li>
-</ul>
-<p>あとは、とにかくネットサーフィンしてました</p>
-</div>
-</div>
-<div id="感想" class="section level2">
-<h2>感想</h2>
-<ul>
-<li>はてぶとかのcontents management systems ってやっぱすごいんだなあという感想。編集のやりやすさは圧倒的にはてぶの方が良い。</li>
-<li>とはいえ、Rmdを編集したら自動で記事になるのは結構ありがたい。</li>
-<li>git関連の用語も少しは馴染めたように思う、、、</li>
-<li>(関係ないが) 昔の自分のコードを見ると死ぬほど汚くて悲しい。関数を作るとか、独学だと習わなかったんや…</li>
-<li>2022/08/05時点で、検索機能をうまく使えていない…この辺javascripitをもう少し理解しないと解けないんだろうか</li>
-</ul>
+<p>国民生活基礎調査をもとにデータをシミュレーションしているから当然なんだけど、いいデモデータになるでしょ？</p>
+<p><br></p>
+<p>実際に動かすときは、この関数を.Rで作成し、解析コードの.R/.Rmdから読み出すといいでしょう。</p>
+<p>例として、以下のディレクトリ構造でコードを書いていたとします。</p>
+<p>index.Rmd (← 今書いてるドキュメント) <br>
+└ index_files/makedata.R <br></p>
+<p>こういう構造の場合、以下のコードで.Rをソースコードとして読むことが可能です。</p>
+<pre class="r"><code>source(&quot;./index_files/makedata.R&quot;) # 今回使う自作関数をまとめた.Rファイル</code></pre>
+<p>そんじゃあね。</p>
 </div>
 
 
@@ -315,15 +359,10 @@ config.yamlあたりは、沼ポイント多めに感じました。いったん
                 <ul class="pager">
                     
                     <li class="previous">
-                        <a href="/post/2022-08-05-regressioncommonbinaryoutcome/" data-toggle="tooltip" data-placement="top" title="稀でない2値イベントに対する回帰モデル">&larr;
+                        <a href="/post/2022-08-06-posthoc-power-analysis/" data-toggle="tooltip" data-placement="top" title="検出力の事後解析、不要説について">&larr;
                             Previous Post</a>
                     </li>
                     
-                    
-                    <li class="next">
-                        <a href="/post/2022-08-05-powerfunction/" data-toggle="tooltip" data-placement="top" title="powerの分布を返す関数、作った">Next
-                            Post &rarr;</a>
-                    </li>
                     
                 </ul>
                 
