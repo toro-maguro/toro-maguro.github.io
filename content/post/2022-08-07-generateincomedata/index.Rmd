@@ -188,8 +188,10 @@ crudeだと RR=`r RR_crude` で、収入を調整したadjustedだと RR=`r RR_a
 
 例として、以下のディレクトリ構造でコードを書いていたとします。
 
-index.Rmd (← 今書いてるドキュメント) <br>
-└ index_files/makedata.R <br>
+root directory/<br>
+├ index.Rmd (← 今書いてるドキュメント) <br>
+└ index_files/ (sub directory)<br>
+&emsp;└ makedata.R <br>
 
 こういう構造の場合、以下のコードで.Rをソースコードとして読むことが可能です。
 

@@ -430,8 +430,10 @@ crudeだと RR=2.32 で、収入を調整したadjustedだと RR=2.20 となっ�
 <h1>実際に使う場合のtips</h1>
 <p>実際にこの関数を動かすときは、関数を.Rで作成して保存し、解析コードの.R/.Rmdから読み出すといいでしょう。</p>
 <p>例として、以下のディレクトリ構造でコードを書いていたとします。</p>
-<p>index.Rmd (← 今書いてるドキュメント) <br>
-└ index_files/makedata.R <br></p>
+<p>root directory/<br>
+├ index.Rmd (← 今書いてるドキュメント) <br>
+└ index_files/ (sub directory)<br>
+ └ makedata.R <br></p>
 <p>こういう構造の場合、以下のコードで.Rをソースコードとして読むことが可能です。</p>
 <pre class="r"><code>source(&quot;./index_files/makedata.R&quot;) # 今回使う自作関数をまとめた.Rファイル</code></pre>
 <p>そんじゃあね。</p>
