@@ -10,9 +10,77 @@ tags:
 subtitle: ''
 description: ''
 image: ''
+output:
+  blogdown::html_page:
+    highlight: default
 ---
 
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
 
 
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
@@ -285,77 +353,77 @@ knowledge consumersとしてはややハイレベルな議論かもしれませ�
 </ul>
 <p><br></p>
 <p>これをコードとして実装していきましょう。</p>
-<pre class="r"><code>pacman::p_load(tidyverse)
-
-a &lt;- c(1:999)
-d0 &lt;- data.frame(a)
-
-d0 &lt;- d0 %&gt;% 
-  # set overall risk
-  mutate(p1 = 0.05) %&gt;% 
-  mutate(p2 = 0.1) %&gt;% 
-  mutate(p3 = 0.2) %&gt;% 
-  mutate(p4 = 0.3) %&gt;% 
-  mutate(p5 = 0.5)
-
-df &lt;- d0 %&gt;% 
-  pivot_longer(cols = p1:p5,
-               names_to = &quot;p_overall&quot;,
-               values_to = &quot;p&quot;) %&gt;% 
-  mutate(RR = a/(2000*p - a)) %&gt;% 
-  mutate(OR = a*(1000+a-2000*p)/((1000-a)*(2000*p-a)) ) %&gt;% 
-  
-  mutate(p_overall = case_when(
-    p_overall == &quot;p1&quot; ~ &quot;5%&quot;,
-    p_overall == &quot;p2&quot; ~ &quot;10%&quot;,
-    p_overall == &quot;p3&quot; ~ &quot;20%&quot;,
-    p_overall == &quot;p4&quot; ~ &quot;30%&quot;,
-    p_overall == &quot;p5&quot; ~ &quot;50%&quot;
-  ),
-  p_overall = factor(p_overall, levels = c(&quot;5%&quot;, &quot;10%&quot;, &quot;20%&quot;,&quot;30%&quot;, &quot;50%&quot;)))</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">999</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>d0 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(a)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>d0 <span class="ot">&lt;-</span> d0 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># set overall risk</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p1 =</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p2 =</span> <span class="fl">0.1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p3 =</span> <span class="fl">0.2</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p4 =</span> <span class="fl">0.3</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p5 =</span> <span class="fl">0.5</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> d0 <span class="sc">%&gt;%</span> </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> p1<span class="sc">:</span>p5,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">&quot;p_overall&quot;</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">&quot;p&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">RR =</span> a<span class="sc">/</span>(<span class="dv">2000</span><span class="sc">*</span>p <span class="sc">-</span> a)) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">OR =</span> a<span class="sc">*</span>(<span class="dv">1000</span><span class="sc">+</span>a<span class="dv">-2000</span><span class="sc">*</span>p)<span class="sc">/</span>((<span class="dv">1000</span><span class="sc">-</span>a)<span class="sc">*</span>(<span class="dv">2000</span><span class="sc">*</span>p<span class="sc">-</span>a)) ) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_overall =</span> <span class="fu">case_when</span>(</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    p_overall <span class="sc">==</span> <span class="st">&quot;p1&quot;</span> <span class="sc">~</span> <span class="st">&quot;5%&quot;</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    p_overall <span class="sc">==</span> <span class="st">&quot;p2&quot;</span> <span class="sc">~</span> <span class="st">&quot;10%&quot;</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    p_overall <span class="sc">==</span> <span class="st">&quot;p3&quot;</span> <span class="sc">~</span> <span class="st">&quot;20%&quot;</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    p_overall <span class="sc">==</span> <span class="st">&quot;p4&quot;</span> <span class="sc">~</span> <span class="st">&quot;30%&quot;</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    p_overall <span class="sc">==</span> <span class="st">&quot;p5&quot;</span> <span class="sc">~</span> <span class="st">&quot;50%&quot;</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">p_overall =</span> <span class="fu">factor</span>(p_overall, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;5%&quot;</span>, <span class="st">&quot;10%&quot;</span>, <span class="st">&quot;20%&quot;</span>,<span class="st">&quot;30%&quot;</span>, <span class="st">&quot;50%&quot;</span>)))</span></code></pre></div>
 <p>現在の段階では、リスク比やオッズ比が負の値や無限大（0割りの結果）となる場合も含まれるので、除外して整理します。<br>
 また、RRやORの範囲が現状だと広すぎるので、上限を5とします。</p>
 <ul>
 <li>1 ≤ RR ≤ 5</li>
 <li>1 ≤ OR ≤ 5</li>
 </ul>
-<pre class="r"><code>df &lt;- df %&gt;% 
-  filter(RR &gt;= 1 &amp; OR &gt;= 1 &amp; RR &lt;= 5 &amp; OR &lt;= 5)</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(RR <span class="sc">&gt;=</span> <span class="dv">1</span> <span class="sc">&amp;</span> OR <span class="sc">&gt;=</span> <span class="dv">1</span> <span class="sc">&amp;</span> RR <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">&amp;</span> OR <span class="sc">&lt;=</span> <span class="dv">5</span>)</span></code></pre></div>
 <p><br></p>
 </div>
 <div id="リスク比-vs-オッズ比のグラフ作り-ggplot2" class="section level2">
 <h2>リスク比 vs オッズ比のグラフ作り (ggplot2)</h2>
 <p>データづくりが完了したので、グラフ化しましょう。（大事なポイントです）</p>
-<pre class="r"><code>plot &lt;- ggplot(data = df, aes(x = RR, y = OR, group = p_overall, colour = p_overall)) + 
-  geom_line(size = 1) + 
-  geom_abline(slope = 1, intercept = 0, alpha = 0.8, colour = &quot;darkgray&quot;) + 
-  geom_point(x = 1, y = 1, colour = &quot;black&quot;) +
-  scale_x_continuous(limits = c(1, 5)) +
-  scale_y_continuous(limits = c(1, 5)) +
-  xlab(&quot;Risk Ratio&quot;) + 
-  ylab(&quot;Odds Ratio&quot;) + 
-  ggtitle(&quot;Risk Ratio vs Odds Ratio&quot;) +
-  
-  annotate(&quot;text&quot;, x = 2.3, y = 5, label = &quot;p[overall] == 0.5&quot;, size = 3, parse = TRUE) + 
-  annotate(&quot;text&quot;, x = 3, y = 5, label = &quot;p[overall] == 0.3&quot;, size = 3, parse = TRUE) + 
-  annotate(&quot;text&quot;, x = 3.7, y = 5, label = &quot;p[overall] == 0.2&quot;, size = 3, parse = TRUE) +
-  annotate(&quot;text&quot;, x = 4.3, y = 5, label = &quot;p[overall] == 0.1&quot;, size = 3, parse = TRUE) + 
-  annotate(&quot;text&quot;, x = 4.8, y = 5, label = &quot;p[overall] == 0.05&quot;, size = 3, parse = TRUE) + 
-  
-  annotate(&quot;text&quot;, x = 1.3, y = 1, label = &quot;RR = OR = 1&quot;, size = 3) + 
-
-  theme_bw()
-
-plot</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="fu">aes</span>(<span class="at">x =</span> RR, <span class="at">y =</span> OR, <span class="at">group =</span> p_overall, <span class="at">colour =</span> p_overall)) <span class="sc">+</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">colour =</span> <span class="st">&quot;darkgray&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">x =</span> <span class="dv">1</span>, <span class="at">y =</span> <span class="dv">1</span>, <span class="at">colour =</span> <span class="st">&quot;black&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Risk Ratio&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Odds Ratio&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;Risk Ratio vs Odds Ratio&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="fl">2.3</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">label =</span> <span class="st">&quot;p[overall] == 0.5&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">3</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">label =</span> <span class="st">&quot;p[overall] == 0.3&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="fl">3.7</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">label =</span> <span class="st">&quot;p[overall] == 0.2&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="fl">4.3</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">label =</span> <span class="st">&quot;p[overall] == 0.1&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="fl">4.8</span>, <span class="at">y =</span> <span class="dv">5</span>, <span class="at">label =</span> <span class="st">&quot;p[overall] == 0.05&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">parse =</span> <span class="cn">TRUE</span>) <span class="sc">+</span> </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="fl">1.3</span>, <span class="at">y =</span> <span class="dv">1</span>, <span class="at">label =</span> <span class="st">&quot;RR = OR = 1&quot;</span>, <span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span> </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>plot</span></code></pre></div>
 <p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
-<pre class="r"><code># ggsave(file = &quot;output/RiskRatio_vs_OddsRatio.png&quot;, plot = plot, dpi = 300, width = 7.5, height = 5)</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggsave(file = &quot;output/RiskRatio_vs_OddsRatio.png&quot;, plot = plot, dpi = 300, width = 7.5, height = 5)</span></span></code></pre></div>
 <p><br></p>
 <p>具体的な値を確認するコードは次のとおりです。</p>
 <p>FYI: <a href="https://teramonagi.hatenablog.com/entry/2021/01/28/212608">与えられた値に対して最も近い値を返す</a> -&gt; 差分の絶対値が最小のものをgroup_byして取ればよい</p>
-<pre class="r"><code>df %&gt;% 
-  filter(round(RR, digits = 2) == 1.5) %&gt;% 
-  group_by(p_overall) %&gt;% 
-  filter(abs(RR-2) == min(abs(RR-2)))</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">round</span>(RR, <span class="at">digits =</span> <span class="dv">2</span>) <span class="sc">==</span> <span class="fl">1.5</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(p_overall) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(RR<span class="dv">-2</span>) <span class="sc">==</span> <span class="fu">min</span>(<span class="fu">abs</span>(RR<span class="dv">-2</span>)))</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ## # Groups:   p_overall [5]
 ##       a p_overall     p    RR    OR
@@ -365,10 +433,10 @@ plot</code></pre>
 ## 3   240 20%        0.2    1.5  1.66
 ## 4   360 30%        0.3    1.5  1.78
 ## 5   600 50%        0.5    1.5  2.25</code></pre>
-<pre class="r"><code>df %&gt;% 
-  filter(round(RR, digits = 1) == 2) %&gt;% 
-  group_by(p_overall) %&gt;% 
-  filter(abs(RR-2) == min(abs(RR-2)))</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">round</span>(RR, <span class="at">digits =</span> <span class="dv">1</span>) <span class="sc">==</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(p_overall) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(RR<span class="dv">-2</span>) <span class="sc">==</span> <span class="fu">min</span>(<span class="fu">abs</span>(RR<span class="dv">-2</span>)))</span></code></pre></div>
 <pre><code>## # A tibble: 5 × 5
 ## # Groups:   p_overall [5]
 ##       a p_overall     p    RR    OR

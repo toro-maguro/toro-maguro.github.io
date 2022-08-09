@@ -8,10 +8,14 @@ categories:
 tags:
   - Epidemiology
   - power
+  - R
 subtitle: 'Zhang, etal. 2019 "Post hoc power analysis: is it an informative and meaningful analysis?" を読んで、図も自分で再現したよ'
 description: ''
 image: ''
 showtoc: false
+output:
+  blogdown::html_page:
+    highlight: default
 ---
 
 

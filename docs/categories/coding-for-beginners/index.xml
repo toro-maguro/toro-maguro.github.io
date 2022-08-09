@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>coding for beginners on Sacoche</title>
+    <link>https://toro-maguro.github.io/categories/coding-for-beginners/</link>
+    <description>Recent content in coding for beginners on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja</language>
+    <lastBuildDate>Tue, 09 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/coding-for-beginners/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>for文の気持ち</title>
+      <link>https://toro-maguro.github.io/post/2022-08-10-forloop/</link>
+      <pubDate>Tue, 09 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-10-forloop/</guid>
+      <description>やること 超初心者向けにfor文を書くときの気持ちを言語化します (以前初心者の方にシェアしたら、人気だったトピックです) pythonで書くけど</description>
+    </item>
+    
+  </channel>
+</rss>

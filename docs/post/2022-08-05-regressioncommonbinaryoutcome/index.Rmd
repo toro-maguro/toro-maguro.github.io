@@ -7,10 +7,15 @@ categories:
   - Epidemiology
 tags:
   - Epidemiology
+  - R
+  - regression
 subtitle: ''
 description: ''
 image: ''
 showtoc: false
+output:
+  blogdown::html_page:
+    highlight: default
 ---
 
 <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">

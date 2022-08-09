@@ -5,17 +5,15 @@
     <link>https://toro-maguro.github.io/tags/regression/</link>
     <description>Recent content in regression on Sacoche</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Tue, 01 Dec 2020 21:13:14 -0500</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/regression/index.xml" rel="self" type="application/rss+xml" />
+    <language>ja</language>
+    <lastBuildDate>Thu, 20 Jan 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/regression/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Hello R Markdown</title>
-      <link>https://toro-maguro.github.io/post/2020-12-01-r-rmarkdown/</link>
-      <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
+      <title>稀でない2値イベントに対する回帰モデル</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/</link>
+      <pubDate>Thu, 20 Jan 2022 00:00:00 +0000</pubDate>
       
-      <guid>https://toro-maguro.github.io/post/2020-12-01-r-rmarkdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <guid>https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/</guid>
+      <description>はじめに Question: 研究参加者の約50％で発生しているbinaryのイベントをモデリングしたい。どんな手法を使えばよいだろうか？ 問題意識: 思考停止の「</description>
     </item>
     
   </channel>

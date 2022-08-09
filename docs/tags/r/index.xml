@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>R on Sacoche</title>
+    <link>https://toro-maguro.github.io/tags/r/</link>
+    <description>Recent content in R on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja</language>
+    <lastBuildDate>Sun, 07 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/r/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>世帯収入の模擬データを作る</title>
+      <link>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</link>
+      <pubDate>Sun, 07 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</guid>
+      <description>やること e-statの令和元年度国民生活基礎調査に基づいて、世帯収入のダミーデータを生む関数を作ります。 source: e-stat なお、単身世帯・性別等の個別化さ</description>
+    </item>
+    
+    <item>
+      <title>検出力の事後解析、不要説について</title>
+      <link>https://toro-maguro.github.io/post/2022-08-06-posthoc-power-analysis/</link>
+      <pubDate>Sat, 06 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-06-posthoc-power-analysis/</guid>
+      <description>はじめに 最近共著の論文でpower関連の話題に出会ったので。 前回に引き続きpower関連の話です。 とりあえず、これ読みましょう→ Zhang, etal. 2019 めちゃ</description>
+    </item>
+    
+    <item>
+      <title>powerの分布を返す関数、作った</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-powerfunction/</link>
+      <pubDate>Fri, 05 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-05-powerfunction/</guid>
+      <description>powerの分布を考えてみよう モチベ: 様々な真の値に対するpowerの分布を計算したい。 “真のリスク比” なんて神のみぞ知る値。powerの計</description>
+    </item>
+    
+    <item>
+      <title>稀でない2値イベントに対する回帰モデル</title>
+      <link>https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/</link>
+      <pubDate>Thu, 20 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/</guid>
+      <description>はじめに Question: 研究参加者の約50％で発生しているbinaryのイベントをモデリングしたい。どんな手法を使えばよいだろうか？ 問題意識: 思考停止の「</description>
+    </item>
+    
+  </channel>
+</rss>

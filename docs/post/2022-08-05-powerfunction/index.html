@@ -97,6 +97,10 @@
                     
                         
                         <li>
+                            <a href="/categories/coding-for-beginners">coding-for-beginners</a>
+                        </li>
+                        
+                        <li>
                             <a href="/categories/epidemiology">epidemiology</a>
                         </li>
                         
@@ -114,6 +118,8 @@
                         <li><a href="/archive/">ARCHIVE</a></li>
                     
                         <li><a href="/about/">ABOUT</a></li>
+                    
+                        <li><a href="/tags/">TAGS</a></li>
                     
 
                     
@@ -182,6 +188,10 @@
                             power
                         </a>
                         
+                        <a class="tag" href="/tags/r" title="R">
+                            R
+                        </a>
+                        
                     </div>
                     <h1>powerの分布を返す関数、作った</h1>
                     <h2 class="subheading"></h2>
@@ -220,6 +230,71 @@
                 
                 
 <script src="https://toro-maguro.github.io/post/2022-08-05-powerfunction/index_files/header-attrs/header-attrs.js"></script>
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
 
 
 <div id="powerの分布を考えてみよう" class="section level1">
@@ -233,65 +308,65 @@
 <p>真の値と言っているのに、変動するのはおかしいんじゃ？という指摘はごもっともです。今回は単なる思考実験と思ってください。</p>
 <p><br></p>
 <p>NOTE: これはあくまで真の値を知っているときの話であって、標本値の話ではない</p>
-<pre class="r"><code>pacman::p_load(pwr, tidyverse)
-
-PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.25, rr_max=3.0){
-  
-  # あるリスク比を定めると、powerを返す関数
-  GetPower_byRR&lt;- function(risk_ratio){
-    res &lt;- pwr.2p2n.test(h = ES.h(p1 = p_event_control, p2 = p_event_control*risk_ratio),
-                         n1 = n_control, 
-                         n2 = n_exposed,
-                         sig.level = 0.05,
-                         alternative = &quot;two.sided&quot;)
-    power &lt;- res[[&quot;power&quot;]]
-    return(power)
-    }
-  
-  # イベント発生人数がN of participantsを超えるとエラーになるので、先に宣言しておく
-  rr_max &lt;- ifelse(p_event_control*rr_max &gt;= 1, 1/p_event_control, rr_max) 
-  
-  scale_riskratio &lt;- seq(from=rr_min, to=rr_max, by=0.01)
-  estimate_power &lt;- sapply(scale_riskratio, GetPower_byRR)
-  
-  df &lt;- data.frame(risk_ratio = scale_riskratio, power = estimate_power)
-  # RR &lt; 1 でpower &gt;= 0.8となる、1に近い (最大の) RRを得る
-  df_rr1 &lt;- df %&gt;% 
-    filter(risk_ratio &lt; 1 &amp; power &gt;= 0.8) %&gt;% 
-    arrange(power) # powerで昇順ソート
-  power_080_1 &lt;- max(df_rr1$risk_ratio)
-
-  # RR &gt; 1 でpower &gt;= 0.8となる、1に近い (最小の) RRを得る
-  df_rr2 &lt;- df %&gt;% 
-    filter(risk_ratio &gt; 1 &amp; power &gt;= 0.80) %&gt;% 
-    arrange(power) # powerで昇順ソート
-  power_080_2 &lt;- min(df_rr2$risk_ratio)
-  
-  # description
-  cha1 &lt;- sprintf(&quot;number of participants: control group=%d&quot;, n_control)
-  cha2 &lt;- sprintf(&quot;, exposure group=%d\n&quot;, n_exposed)
-  cha3 &lt;- sprintf(&quot;true value of event probability in control group=%.2f&quot;, p_event_control)
-  cha4 &lt;- sprintf(&quot;blue hashed line: the maximum value of risk ratio (within RR &lt;1) that achieved power ≥ 0.8=%.2f&quot;, power_080_1)
-  cha5 &lt;- sprintf(&quot;\norange hashed line: the minimum value of risk ratio (within RR&gt;1) that achieved power ≥ 0.8=%.2f&quot;, power_080_2)
-  
-  subtitle = paste0(cha1, cha2, cha3)
-  caption = paste0(cha4, cha5)
-  
-  # plot
-  plot &lt;- ggplot(data = df, aes(x = risk_ratio, y = power)) + 
-    geom_line() +
-    geom_vline(xintercept = 1, colour = &quot;darkgray&quot;) + 
-    geom_vline(xintercept = power_080_1, linetype = 2, colour = &quot;blue&quot;, alpha=0.8) + 
-    geom_vline(xintercept = power_080_2, linetype = 2, colour = &quot;orange&quot;, alpha=0.8) + 
-    geom_hline(yintercept = 0.8, colour = &quot;navy&quot;, alpha = 0.5) + 
-    scale_y_continuous(breaks = seq(0, 1, 0.2)) + 
-    labs(title = &quot;Relationship between risk ratio and power in binary-outcome studies&quot;,
-        subtitle = subtitle,
-        caption = caption) +
-    xlab(&quot;risk ratio of exposed group compared to control group&quot;) +
-    theme_bw() 
-  return(plot)
-}</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(pwr, tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>PlotPower_byRR <span class="ot">&lt;-</span> <span class="cf">function</span>(n_control, n_exposed, p_event_control, <span class="at">rr_min =</span> <span class="fl">0.25</span>, <span class="at">rr_max=</span><span class="fl">3.0</span>){</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># あるリスク比を定めると、powerを返す関数</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  GetPower_byRR<span class="ot">&lt;-</span> <span class="cf">function</span>(risk_ratio){</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    res <span class="ot">&lt;-</span> <span class="fu">pwr.2p2n.test</span>(<span class="at">h =</span> <span class="fu">ES.h</span>(<span class="at">p1 =</span> p_event_control, <span class="at">p2 =</span> p_event_control<span class="sc">*</span>risk_ratio),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                         <span class="at">n1 =</span> n_control, </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                         <span class="at">n2 =</span> n_exposed,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                         <span class="at">sig.level =</span> <span class="fl">0.05</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                         <span class="at">alternative =</span> <span class="st">&quot;two.sided&quot;</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    power <span class="ot">&lt;-</span> res[[<span class="st">&quot;power&quot;</span>]]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(power)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># イベント発生人数がN of participantsを超えるとエラーになるので、先に宣言しておく</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  rr_max <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(p_event_control<span class="sc">*</span>rr_max <span class="sc">&gt;=</span> <span class="dv">1</span>, <span class="dv">1</span><span class="sc">/</span>p_event_control, rr_max) </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  scale_riskratio <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span>rr_min, <span class="at">to=</span>rr_max, <span class="at">by=</span><span class="fl">0.01</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  estimate_power <span class="ot">&lt;-</span> <span class="fu">sapply</span>(scale_riskratio, GetPower_byRR)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">risk_ratio =</span> scale_riskratio, <span class="at">power =</span> estimate_power)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RR &lt; 1 でpower &gt;= 0.8となる、1に近い (最大の) RRを得る</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  df_rr1 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(risk_ratio <span class="sc">&lt;</span> <span class="dv">1</span> <span class="sc">&amp;</span> power <span class="sc">&gt;=</span> <span class="fl">0.8</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(power) <span class="co"># powerで昇順ソート</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  power_080_1 <span class="ot">&lt;-</span> <span class="fu">max</span>(df_rr1<span class="sc">$</span>risk_ratio)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># RR &gt; 1 でpower &gt;= 0.8となる、1に近い (最小の) RRを得る</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  df_rr2 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(risk_ratio <span class="sc">&gt;</span> <span class="dv">1</span> <span class="sc">&amp;</span> power <span class="sc">&gt;=</span> <span class="fl">0.80</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(power) <span class="co"># powerで昇順ソート</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  power_080_2 <span class="ot">&lt;-</span> <span class="fu">min</span>(df_rr2<span class="sc">$</span>risk_ratio)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># description</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  cha1 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">&quot;number of participants: control group=%d&quot;</span>, n_control)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  cha2 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">&quot;, exposure group=%d</span><span class="sc">\n</span><span class="st">&quot;</span>, n_exposed)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  cha3 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">&quot;true value of event probability in control group=%.2f&quot;</span>, p_event_control)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  cha4 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">&quot;blue hashed line: the maximum value of risk ratio (within RR &lt;1) that achieved power ≥ 0.8=%.2f&quot;</span>, power_080_1)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  cha5 <span class="ot">&lt;-</span> <span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">orange hashed line: the minimum value of risk ratio (within RR&gt;1) that achieved power ≥ 0.8=%.2f&quot;</span>, power_080_2)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  subtitle <span class="ot">=</span> <span class="fu">paste0</span>(cha1, cha2, cha3)</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  caption <span class="ot">=</span> <span class="fu">paste0</span>(cha4, cha5)</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="fu">aes</span>(<span class="at">x =</span> risk_ratio, <span class="at">y =</span> power)) <span class="sc">+</span> </span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">1</span>, <span class="at">colour =</span> <span class="st">&quot;darkgray&quot;</span>) <span class="sc">+</span> </span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> power_080_1, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">colour =</span> <span class="st">&quot;blue&quot;</span>, <span class="at">alpha=</span><span class="fl">0.8</span>) <span class="sc">+</span> </span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> power_080_2, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">colour =</span> <span class="st">&quot;orange&quot;</span>, <span class="at">alpha=</span><span class="fl">0.8</span>) <span class="sc">+</span> </span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fl">0.8</span>, <span class="at">colour =</span> <span class="st">&quot;navy&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)) <span class="sc">+</span> </span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Relationship between risk ratio and power in binary-outcome studies&quot;</span>,</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        <span class="at">subtitle =</span> subtitle,</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        <span class="at">caption =</span> caption) <span class="sc">+</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">xlab</span>(<span class="st">&quot;risk ratio of exposed group compared to control group&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() </span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(plot)</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="関数の説明" class="section level1">
 <h1>関数の説明</h1>
@@ -309,9 +384,9 @@ PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.
 <p>コントロール群100人、曝露群100人で、曝露群でのイベント発生割合が25%とします。</p>
 <p>真のRRが1.75ならpowerは0.80となり、「十分」と考えられます。
 ただし、リスク比が1.5ならpower=0.50程度となります。かなりばらつくんですね。</p>
-<pre class="r"><code>PlotPower_byRR(n_control = 100, 
-               n_exposed = 100, 
-               p_event_control = 0.25)</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PlotPower_byRR</span>(<span class="at">n_control =</span> <span class="dv">100</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">n_exposed =</span> <span class="dv">100</span>, </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">p_event_control =</span> <span class="fl">0.25</span>)</span></code></pre></div>
 <p><img src="https://toro-maguro.github.io/post/2022-08-05-powerfunction/index_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 </div>
 <div id="example2" class="section level2">
@@ -319,9 +394,9 @@ PlotPower_byRR &lt;- function(n_control, n_exposed, p_event_control, rr_min = 0.
 <p>人数を増やしてみましょう。今度はコントロール群200人、曝露グループ200人にします。</p>
 <p>この場合、RR=1.75のときpowerはほぼ1 (100%) となります。人数が増えたので、当然です。
 power=0.8を達成するリスク比は1.52となりました。</p>
-<pre class="r"><code>PlotPower_byRR(n_control = 200, 
-               n_exposed = 200, 
-               p_event_control = 0.25)</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">PlotPower_byRR</span>(<span class="at">n_control =</span> <span class="dv">200</span>, </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">n_exposed =</span> <span class="dv">200</span>, </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">p_event_control =</span> <span class="fl">0.25</span>)</span></code></pre></div>
 <p><img src="https://toro-maguro.github.io/post/2022-08-05-powerfunction/index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
 </div>
@@ -393,6 +468,8 @@ power=0.8を達成するリスク比は1.52となりました。</p>
                         
                         
                         
+                        
+                        
                         <a href="/tags/epidemiology" title="epidemiology">
                             epidemiology
                         </a>
@@ -404,6 +481,16 @@ power=0.8を達成するリスク比は1.52となりました。</p>
                         <a href="/tags/power" title="power">
                             power
                         </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/r" title="r">
+                            r
+                        </a>
+                        
+                        
                         
                         
                     </div>

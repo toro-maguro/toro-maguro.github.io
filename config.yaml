@@ -21,6 +21,8 @@ params:
       title: ARCHIVE
     - href: /about/
       title: ABOUT
+    - href: /tags/
+      title: TAGS
   algolia:
     params:
       - categories

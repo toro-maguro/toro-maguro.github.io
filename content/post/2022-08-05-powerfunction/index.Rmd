@@ -8,15 +8,16 @@ categories:
 tags:
   - Epidemiology
   - power
+  - R
 output:
-  html_document:
-    highlight: "zenburn"
+  blogdown::html_page:
+    highlight: default
 ---
 
 
 # powerの分布を考えてみよう
 
-モチベ: 様々な真の値に対するpowerの分布を計算したい。<br>
+モチベ: 様々な真の値に対するpowerの分布を計算したい。<br> 
 "真のリスク比" なんて神のみぞ知る値。powerの計算ってどれくらいrobustnessがあるのかな？という関心です。
 
 * 曝露変数: 0/1の2値、結果変数: 0/1の2値、のシチュエーション

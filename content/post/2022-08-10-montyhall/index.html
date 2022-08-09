@@ -1,0 +1,424 @@
+---
+title: Monty Hall問題をpythonで解く
+author: ''
+date: '2022-08-10'
+slug: []
+categories:
+  - coding for beginners
+tags:
+  - coding skill
+  - python
+subtitle: 'ちょっと面倒なプログラミングコードを書くプロセスを言語化した'
+description: ''
+image: ''
+showtoc: true
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<div id="やること" class="section level1">
+<h1>やること</h1>
+<p>ちょっと複雑そうなプログラミング課題を1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、のプロセスを具体的に辿る</p>
+<div id="なぜプロセス" class="section level2">
+<h2>なぜプロセス?</h2>
+<p>初学者に必要なものは模範解答でも指示書でもなく、プロセスだと思うから。</p>
+<ul>
+<li>プログラミング系の教科書、写経させすぎでは？あと、急に難問ぶん投げすぎでは？</li>
+<li>写経の内に「なるほど」と理解する前に、挫折する人も一定数いるはず。それってもったいなくない？</li>
+<li>急に難問投げられても困る。初学者的には「言われたことしか書けないよ」って感じるだろうね。</li>
+<li>最終的な模範解答を見せられても、初心者としては「いきなりそんな綺麗なコード書けない」ってきっと感じるはず。</li>
+</ul>
+<p>そこで、模範解答でもなく指示書でもなく、プロセスをたどることで理解が深まるのでは？という発想です。<br>
+(これも初心者向けpythonセッションで紹介したトピックで、
+<a href="https://toro-maguro.github.io/post/2022-08-09-forlooppython/">for文の気持ち</a>の続きです。)</p>
+<hr />
+</div>
+<div id="内容" class="section level2">
+<h2>内容</h2>
+<p>「モンティ・ホール問題という確率論の有名な問題をpythonでシミュレーションすることで解く」というプロセスを明示する記事</p>
+</div>
+<div id="伝えたいこと" class="section level2">
+<h2>伝えたいこと</h2>
+<ul>
+<li>コードを考えるときは、1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、というプロセスを通る。</li>
+<li>小さく作ることが大事</li>
+</ul>
+<hr />
+</div>
+</div>
+<div id="お題-モンティホール問題" class="section level1">
+<h1>お題: モンティ・ホール問題</h1>
+<p><a href="https://ja.wikipedia.org/wiki/モンティ・ホール問題">Wikipediaの説明</a>は以下の通りです</p>
+<blockquote>
+<p>＜投稿された相談＞<br>
+プレイヤーの前に閉じた3つのドアがあって、1つのドアの後ろには景品の新車が、2つのドアの後ろには、はずれを意味するヤギがいる。プレイヤーは新車のドアを当てると新車がもらえる。プレイヤーが1つのドアを選択した後、司会のモンティが残りのドアのうちヤギがいるドアを開けてヤギを見せる。<br>
+ここでプレイヤーは、最初に選んだドアを、残っている開けられていないドアに変更してもよいと言われる。<br>
+<strong>ここでプレイヤーはドアを変更すべきだろうか？</strong></p>
+</blockquote>
+<p>こういうことです。</p>
+<ol style="list-style-type: decimal">
+<li>3つのドア (A, B, and C) に (景品, ヤギ, ヤギ) がランダムに入っている</li>
+<li>プレイヤーはドアを1つ選ぶ</li>
+<li>モンティは正解を知っており、プレイヤーが選ばなかった残りの2つのドアのうち不正解のドアを1つ開ける。</li>
+<li>モンティはプレイヤーに「ドアを選び直してよい」と必ず言う。</li>
+<li>プレイヤーはより高い確率で景品を得るためにドアを選び直すべきか？</li>
+</ol>
+<div id="シミュレーションによる解答" class="section level2">
+<h2>シミュレーションによる解答</h2>
+<p>数式的に考えてもよいのですが、条件付き確率やベイズの定理等を理解する必要があり、面倒 (?) です。
+そこで、実際にモンティ・ホール問題を何度も何度も実践してみて、ドアを変える/変えないの2つのパターンの確率を比較してしまいましょう。
+pythonくんに<strong>a) プレイヤーはドアを選び直す、b) ドアを選び直さない、の2つのシナリオをそれぞれ1万回試してもらいます。</strong></p>
+<p>では、やっていきましょう。</p>
+</div>
+<div id="解答例" class="section level2">
+<h2>解答例</h2>
+<p>参考までに、解答例を書いておきます。<br>
+これを最初から「解答例です」とだけ提示されても、初心者としては「こんなもん思いつくわけないじゃんw」としか思いませんよね。</p>
+<pre class="python"><code>import random
+
+# モンティがドアを開ける関数
+def MontyOpenDoor(true, playerChoice):
+    doorlist = [1, 2, 3]
+    if true==playerChoice:
+        doorlist.remove(true)
+        random_num = random.randint(0,1)
+        if random_num == 0:
+            opendoor = doorlist[0]
+        else:
+            opendoor = doorlist[1]
+    
+    else:
+        doorlist.remove(true)
+        doorlist.remove(playerChoice)
+        opendoor = doorlist[0]
+    
+    return(opendoor)
+
+# プレイヤーがモンティのドア提示後に選択肢を変える関数
+def ChangeAnswer(select1, monty):
+    doorlist = [1,2,3]
+    doorlist.remove(select1)
+    doorlist.remove(monty)
+    answer = doorlist[0]
+    return(answer)
+
+# モンティ・ホール問題を1度試行する関数
+def MontyHallAttempt(switch):
+    # scenario: player switch choice
+    if switch == True: 
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice)
+        player_FinalChoice = ChangeAnswer(player_1stChoice, monty)
+    
+    # scenario: player DON&#39;T switch choice
+    if switch == False:
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice)
+        player_FinalChoice = player_1stChoice # PLAYER DON&#39;T SWITCH
+    
+    if true_answer == player_FinalChoice:
+        result = 1
+    else:
+        result = 0
+    
+    return(result)
+
+# 試行回数分モンティ・ホール問題を実行する関数
+def SimulateMontyHall(switch, iterations=10000):
+    success = 0
+    for i in range(iterations):
+        success += MontyHallAttempt(switch)
+    return(success/iterations)
+
+scenario_switch = SimulateMontyHall(switch = True)
+scenario_notswitch = SimulateMontyHall(switch = False)
+
+print(f&#39;&#39;&#39;選択肢を変える場合の景品獲得確率: {scenario_switch}, 
+選択肢を変えない場合: {scenario_notswitch}&#39;&#39;&#39;)</code></pre>
+<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6689, 
+## 選択肢を変えない場合: 0.3371</code></pre>
+</div>
+</div>
+<div id="機能を整理する" class="section level1">
+<h1>機能を整理する</h1>
+<p>今回のモンティ・ホール問題をシミュレーションによって解くという課題を、もう少し分解します。
+まずはa) モンティ・ホール問題を1度実行する、b) モンティ・ホール問題を何度も実行して結果をまとめる、の2つに分けましょう。</p>
+<div id="a-モンティホール問題を1度実行する" class="section level2">
+<h2>a) モンティ・ホール問題を1度実行する</h2>
+<p>上述のモンティ・ホール問題のルールを再掲します。</p>
+<ol style="list-style-type: decimal">
+<li>3つのドア (A, B, and C) に (景品, ヤギ, ヤギ) がランダムに入っている</li>
+<li>プレイヤーはドアを1つ選ぶ</li>
+<li>モンティは正解を知っており、プレイヤーが選ばなかった残りの2つのドアのうち不正解のドアを1つ開ける。</li>
+<li>モンティはプレイヤーに「ドアを選び直してよい」と必ず言う。</li>
+<li>プレイヤーはより高い確率で景品を得るためにドアを選び直すべきか？</li>
+</ol>
+<p>このルールで登場しそうな機能は、次の3点に整理できそうです。</p>
+<ul>
+<li>3つの選択肢からランダムに1つ選ぶ機能 (景品が入っているドアを決めたり、プレイヤーの選択を決める)</li>
+<li>モンティの行動である、「プレイヤーが選ばなかった残りの2つのドアのうち不正解のドアを1つ開ける」という機能</li>
+<li>「ドアを選び直す」というシナリオで使う、最初の選択肢でもモンティの選んだドアでもない、残ったドアを選ぶ機能</li>
+</ul>
+<p>この3つさえ揃えば、モンティ・ホール問題を1度実行するというタスクは実行できそうです。</p>
+</div>
+<div id="b-たくさん実行させて結果をまとめる" class="section level2">
+<h2>b) たくさん実行させて結果をまとめる</h2>
+<p>これはシンプルにこの形でどうでしょうか？</p>
+<ul>
+<li>結果を格納する変数successを作成し、0を入れておく。</li>
+<li>i回目のモンティ・ホールチャレンジの結果 (正解=1, 不正解=0) をresultに追加していく。正解すると1が追加される。</li>
+<li>success (成功回数) / 試行回数 を計算すれば、正解する確率が得られる。</li>
+</ul>
+<p>このアイデアは経験や学習から出てくるものかもしれません。
+別に難しいロジックではありませんが、経験無しで思いつく人はすごい。</p>
+</div>
+</div>
+<div id="機能1-乱数を使ってa-cから1つ選択する関数を準備しよう" class="section level1">
+<h1>機能1: 乱数を使ってA-Cから1つ選択する関数を準備しよう</h1>
+<div id="言語化してから調べる" class="section level2">
+<h2>1-1: 言語化してから調べる</h2>
+<p>いい例がサイコロですよね。1or2ならA, 3or4ならB, 5or6ならCといった形です。
+こういう形で言語化できたら、ググってしまいましょう。
+<strong>重要なのはこの順番です。闇雲にググるのではなく、やりたいことをある程度具体化してからググります</strong></p>
+<p>ググれば、randomライブラリのrandint関数にであうはずです。試してみましょう。</p>
+<pre class="python"><code>import random
+random.randint(1,3)</code></pre>
+<pre><code>## 2</code></pre>
+</div>
+<div id="小さく確認する" class="section level2">
+<h2>1-2: 小さく確認する</h2>
+<p>1-3の中から、ランダムに1つ選択する機能は、<code>random.randint(1,3)</code> を使うことで作れました。
+では、1) 景品が入ったドアを選ぶ、2) プレイヤーがドアを選択する、
+3) 正解かどうかを確かめる、というコードを簡単に書いてみましょう。</p>
+<p><strong>大事なこと: 一気に完成形を目指さず、途中で細かく確認する。
+完成してから全部確かめるとなると、どこに問題があるのかわかりにくい。</strong></p>
+<pre class="python"><code>answer_test = random.randint(1,3)
+player_1st_test = random.randint(1,3)
+
+if answer_test == player_1st_test:
+    print(f&#39;answer: {answer_test}, player: {player_1st_test}, result: 正解!&#39;)
+else:
+    print(f&#39;answer: {answer_test}, player: {player_1st_test}, result: 残念!&#39;)</code></pre>
+<pre><code>## answer: 2, player: 1, result: 残念!</code></pre>
+</div>
+</div>
+<div id="機能2-モンティがドアを開ける機能を作ろう" class="section level1">
+<h1>機能2: モンティがドアを開ける機能を作ろう</h1>
+<div id="まずは言語化" class="section level2">
+<h2>2-1: まずは言語化</h2>
+<p>先程とは違い、やや複雑な機能ですね。そこで、丁寧に言語化してみましょう。
+具体的な例・ワークフローを考えてみるとMontyの行動にif文が見えてくるはずです。</p>
+<div id="条件1-プレイヤーの最初の選択肢が正解している場合" class="section level4">
+<h4>条件1: プレイヤーの最初の選択肢が正解している場合</h4>
+<p>例えば正解がAのドアで, プレイヤーの選択もAのドアの場合です。</p>
+<p>このとき、モンティはBとCのどちらのドアを開けても良いです。
+この場合は、正解以外の残りの2つのドアのいずれかをランダムに選択する、と考えましょう。</p>
+</div>
+<div id="条件2-プレイヤーの最初の選択肢が正解していない場合" class="section level4">
+<h4>条件2: プレイヤーの最初の選択肢が正解していない場合</h4>
+<p>例えば正解がAのドアで, プレイヤーの選択はBのドアの場合です。</p>
+<p>このとき、モンティは正解でもプレイヤーの選択でもない、残りのCを開けなくてはなりません。</p>
+</div>
+</div>
+<div id="やりたい機能とコードを考える" class="section level2">
+<h2>2-2: やりたい機能とコードを考える</h2>
+<p>必要な機能は、次の2点となります。</p>
+<ul>
+<li>ドアA-Cから、正解やプレイヤーの選択肢を除外する機能</li>
+<li>乱数でドアを選ぶ機能</li>
+</ul>
+<p>2つ目は先程取り組んだ <code>random.randint(1,3)</code> で良いですね。選択肢の除外はこう実装しましょうか。</p>
+<ul>
+<li>ドアのリストdoorlistを作成し、1,2,3を入れる。(A-Cよりも数値の方が扱いやすそう)</li>
+<li><code>doorlist.remove()</code> を使って、正解を除外したり、プレイヤーの選択を除外する。</li>
+</ul>
+<p>では、実際に小さく試してみましょう。</p>
+<pre class="python"><code>doorlist_test = [1,2,3]
+answer_test = 1
+
+doorlist_test.remove(answer_test)
+doorlist_test</code></pre>
+<pre><code>## [2, 3]</code></pre>
+<p>きちんと<code>doorlist</code>から1が除外され、[2,3] が返されました。うまく行ってそうですね。</p>
+</div>
+<div id="関数化" class="section level2">
+<h2>2-3: 関数化</h2>
+<p>想像した通りに動いていました！ただ、これを何回も書くのは非常に読みにくいし冗長なコードになります。<strong>そこで関数化しましょう。</strong> この発想は”Don’t Repeat Yourself” というDRY原則に基づきます。</p>
+<pre class="python"><code># モンティがドアを開ける関数
+def MontyOpenDoor(true, playerChoice):
+    doorlist = [1, 2, 3]
+    # 条件1: プレイヤーの最初の選択肢が正解している場合
+    if true==playerChoice:
+        doorlist.remove(true)
+        random_num = random.randint(0,1)
+        if random_num == 0:
+            opendoor = doorlist[0]
+        else:
+            opendoor = doorlist[1]
+            
+    # 条件2: プレイヤーの最初の選択肢が正解していない場合
+    else:
+        doorlist.remove(true)
+        doorlist.remove(playerChoice)
+        opendoor = doorlist[0]
+    
+    return(opendoor)</code></pre>
+<p>作ったら確認も忘れずに。</p>
+<pre class="python"><code>answer_test = random.randint(1,3)
+player_1st_test = random.randint(1,3)
+
+monty_test = MontyOpenDoor(answer_test, player_1st_test)
+print(f&#39;&#39;&#39;正解: {answer_test}, プレイヤー: {player_1st_test} 
+モンティが開くドア: {monty_test}&#39;&#39;&#39;)</code></pre>
+<pre><code>## 正解: 1, プレイヤー: 2 
+## モンティが開くドア: 3</code></pre>
+</div>
+</div>
+<div id="機能3-選択肢を変える機能を作る" class="section level1">
+<h1>機能3: 選択肢を変える機能を作る</h1>
+<p>だいたいノリがわかってきましたか？</p>
+<p><a href="https://toro-maguro.github.io/post/2022-08-09-forlooppython/">for文の気持ち</a>でも書きましたが、基本この考え方です。</p>
+<ul>
+<li>まずは簡単な例から。1番小さな例から考える。</li>
+<li>簡単で具体的なものを観察してから、抽象化できると感じたらコードに反映させる。</li>
+</ul>
+<p>コードを最初から思いつける人なんていません。まずは具体例を考える・作る。そのあとで必要ならググる。曖昧にググることはしない。この流れ大事です。</p>
+<p>では、選択肢を変える機能は最初から関数として書いてみましょう。</p>
+<pre class="python"><code># プレイヤーがモンティのドア提示後に選択肢を変える関数
+def ChangeAnswer(select1, monty):
+    doorlist = [1,2,3]
+    doorlist.remove(select1)
+    doorlist.remove(monty)
+    answer = doorlist[0]
+    return(answer)</code></pre>
+</div>
+<div id="機能1-3をまとめる" class="section level1">
+<h1>機能1-3をまとめる</h1>
+<p>機能があつまってきたので、1度のモンティ・ホール問題を試行するという関数にします。<br>
+モンティ・ホール問題を1度試し、正解なら1を、間違いなら0を返すという関数を作成します。
+引数としてシナリオ (選択肢を変えるのか、変えないのか) を入れておくと便利そうなので、それも組み込みます。</p>
+<pre class="python"><code># モンティ・ホール問題を1度試行する関数
+def MontyHallAttempt(switch):
+    # scenario: player switch choice
+    if switch == True: 
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice) # Montyがドアを開ける関数が組み込まれる
+        player_FinalChoice = ChangeAnswer(player_1stChoice, monty) # 選択肢を変える関数が組み込まれる
+    
+    # scenario: player DON&#39;T switch choice
+    if switch == False:
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice)
+        player_FinalChoice = player_1stChoice # PLAYER DON&#39;T SWITCH
+    
+    if true_answer == player_FinalChoice:
+        result = 1
+    else:
+        result = 0
+    
+    return(result)</code></pre>
+<p>確認します。0か1がきちんと返ってきて、モンティ・ホール問題を1度実行することに成功しました！</p>
+<pre class="python"><code>MontyHallAttempt(switch = True)</code></pre>
+<pre><code>## 1</code></pre>
+</div>
+<div id="機能4-シミュレーション" class="section level1">
+<h1>機能4: シミュレーション</h1>
+<p>最後に、モンティ・ホール問題をa) 選択肢を変える場合、b) 選択肢を変えない場合、の2つのシナリオをそれぞれ1万回実行して結果を比較するシミュレーションコードを書きます。</p>
+<p>ここまでコードを頑張って書いてきたので、最後は非常にシンプルです。</p>
+<pre class="python"><code># 試行回数分モンティ・ホール問題を実行する関数
+def SimulateMontyHall(switch, iterations=10000):
+    success = 0
+    for i in range(iterations):
+        success += MontyHallAttempt(switch)
+    return(success/iterations)</code></pre>
+<p>完成です！！！<br>
+では実行します！</p>
+<pre class="python"><code># 選択肢を変えるシナリオ
+SimulateMontyHall(switch = True)</code></pre>
+<pre><code>## 0.6691</code></pre>
+<pre class="python"><code># 選択肢を変えないシナリオ
+SimulateMontyHall(switch = False)</code></pre>
+<pre><code>## 0.3294</code></pre>
+</div>
+<div id="まとめ" class="section level1">
+<h1>まとめ</h1>
+<p>モンティ・ホール問題の答えとしては、選択肢を変えるべきでしたね。</p>
+<p>一見、選択肢を変えようが変えまいが五分五分に見えますが、選択肢を変える=2/3, 選択肢を変えない=1/3の確率で正解となります。
+ちょっとパラドックスめいているため、有名になった問題でした。(コードを書くという話題ではないですね、すみません)</p>
+<p>この記事で伝えたかったコードを書く上で大切なプロセスは、<strong>1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、です。
+そして小さく作って、小さく確認することが重要です。</strong></p>
+<p>それでは、おつかれさまでしたー。</p>
+<pre class="python"><code>import random
+
+# モンティがドアを開ける関数
+def MontyOpenDoor(true, playerChoice):
+    doorlist = [1, 2, 3]
+    if true==playerChoice:
+        doorlist.remove(true)
+        random_num = random.randint(0,1)
+        if random_num == 0:
+            opendoor = doorlist[0]
+        else:
+            opendoor = doorlist[1]
+    
+    else:
+        doorlist.remove(true)
+        doorlist.remove(playerChoice)
+        opendoor = doorlist[0]
+    
+    return(opendoor)
+
+# プレイヤーがモンティのドア提示後に選択肢を変える関数
+def ChangeAnswer(select1, monty):
+    doorlist = [1,2,3]
+    doorlist.remove(select1)
+    doorlist.remove(monty)
+    answer = doorlist[0]
+    return(answer)
+
+# モンティ・ホール問題を1度試行する関数
+def MontyHallAttempt(switch):
+    # scenario: player switch choice
+    if switch == True: 
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice)
+        player_FinalChoice = ChangeAnswer(player_1stChoice, monty)
+    
+    # scenario: player DON&#39;T switch choice
+    if switch == False:
+        true_answer = random.randint(1,3)
+        player_1stChoice = random.randint(1,3)
+        monty = MontyOpenDoor(true_answer, player_1stChoice)
+        player_FinalChoice = player_1stChoice # PLAYER DON&#39;T SWITCH
+    
+    if true_answer == player_FinalChoice:
+        result = 1
+    else:
+        result = 0
+    
+    return(result)
+
+# 試行回数分モンティ・ホール問題を実行する関数
+def SimulateMontyHall(switch, iterations=10000):
+    success = 0
+    for i in range(iterations):
+        success += MontyHallAttempt(switch)
+    return(success/iterations)
+
+scenario_switch = SimulateMontyHall(switch = True)
+scenario_notswitch = SimulateMontyHall(switch = False)
+
+print(f&#39;&#39;&#39;選択肢を変える場合の景品獲得確率: {scenario_switch}, 
+選択肢を変えない場合: {scenario_notswitch}&#39;&#39;&#39;)</code></pre>
+<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6761, 
+## 選択肢を変えない場合: 0.3247</code></pre>
+</div>

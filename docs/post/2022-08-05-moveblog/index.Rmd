@@ -10,6 +10,9 @@ tags:
 subtitle: ''
 description: ''
 image: ''
+output:
+  blogdown::html_page:
+    highlight: default
 ---
 
 ## 引っ越しした理由

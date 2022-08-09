@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Sacoche">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://toro-maguro.github.io/img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="https://toro-maguro.github.io/img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="for文の気持ち" />
+    <meta property="og:title" content="for文の気持ち" />
+    <meta property="twitter:title" content="for文の気持ち" />
+    
+
+    
+    <meta name="description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz">
+    <meta property="og:description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz" />
+    <meta property="twitter:description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Epidemiology, IT, cloud">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>for文の気持ち | Sacoche</title>
+
+    <link rel="canonical" href="/post/2022-08-10-forloop/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.15.1/css/all.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Sacoche</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/coding-for-beginners">coding-for-beginners</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/epidemiology">epidemiology</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/others">others</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0">自作関数</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive/">ARCHIVE</a></li>
+                    
+                        <li><a href="/about/">ABOUT</a></li>
+                    
+                        <li><a href="/tags/">TAGS</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/coding-skill" title="coding skill">
+                            coding skill
+                        </a>
+                        
+                        <a class="tag" href="/tags/python" title="python">
+                            python
+                        </a>
+                        
+                    </div>
+                    <h1>for文の気持ち</h1>
+                    <h2 class="subheading">「for文を書こう」という着想を説明します</h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Sacoche
+                             
+                            on 
+                            Tuesday, August 9, 2022
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                
+<script src="https://toro-maguro.github.io/post/2022-08-10-forloop/index_files/header-attrs/header-attrs.js"></script>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<div id="やること" class="section level1">
+<h1>やること</h1>
+<p>超初心者向けにfor文を書くときの気持ちを言語化します
+(以前初心者の方にシェアしたら、人気だったトピックです)</p>
+<ul>
+<li>pythonで書くけど、Rでも基本は同じです。</li>
+<li>具体例を丁寧に書くので、非常に冗長です。</li>
+</ul>
+<p>ストーリーの進め方は以下の通りです。</p>
+<ol style="list-style-type: decimal">
+<li>for文を書かずに、for文を使うべきコードを書いてみる (for文のありがたさを知る)</li>
+<li>for文を書きたくなったら、手を出してみる</li>
+<li>完成形を目指してコードを書く</li>
+</ol>
+<p>この記事を読むと、あなたはだんだんfor文を書きたくなる…！</p>
+<div id="課題" class="section level2">
+<h2>課題</h2>
+<blockquote>
+<p>九九のnの段までを表示してください。ただし、すでに既出の計算は非表示にしてください。
+例えば、2の段まで表示するとします。1の段で1×2が登場するので、2の段で2×1は表示しないようにしてください。</p>
+</blockquote>
+<p>解答例は以下の通りです。<br>
+これを目指して、コーディングしていきましょう。</p>
+<pre class="python"><code>def TimesTable(n):
+    for i in range(1, n+1, 1):
+        print(f&#39;&#39;&#39;{i}の段&#39;&#39;&#39;)
+        for j in range(i, 10, 1):
+            answer = i*j
+            print(f&#39;&#39;&#39;{i} × {j} = {answer}&#39;&#39;&#39;)
+
+TimesTable(2) # example: n=2</code></pre>
+<pre><code>## 1の段
+## 1 × 1 = 1
+## 1 × 2 = 2
+## 1 × 3 = 3
+## 1 × 4 = 4
+## 1 × 5 = 5
+## 1 × 6 = 6
+## 1 × 7 = 7
+## 1 × 8 = 8
+## 1 × 9 = 9
+## 2の段
+## 2 × 2 = 4
+## 2 × 3 = 6
+## 2 × 4 = 8
+## 2 × 5 = 10
+## 2 × 6 = 12
+## 2 × 7 = 14
+## 2 × 8 = 16
+## 2 × 9 = 18</code></pre>
+</div>
+</div>
+<div id="の段を書いてみる" class="section level1">
+<h1>1の段を書いてみる</h1>
+<div id="for文を書かずにfor文の内容を書く" class="section level2">
+<h2>for文を書かずに、for文の内容を書く</h2>
+<p>超初心者は最初から完成形を目指してはいけません。まずは求めるものの一部で良いから動くものを作りましょう。</p>
+<p>今回で言うと、1×1, 1×2,…をとりあえず書きたいですよね。やってみましょう。</p>
+<pre class="python"><code>1*1</code></pre>
+<pre><code>## 1</code></pre>
+<pre class="python"><code>1*2</code></pre>
+<pre><code>## 2</code></pre>
+<pre class="python"><code>1*3</code></pre>
+<pre><code>## 3</code></pre>
+<pre class="python"><code>1*4</code></pre>
+<pre><code>## 4</code></pre>
+<p><strong>やりたいことはできていますが、さすがにそろそろ面倒ですよね？</strong></p>
+<p>要は後ろの数が1つずつ増えていくだけです。<strong>1から始まって、1ずつ増えて、10になったら計算を終了してほしい…</strong>
+そうですね、for文の出番です。</p>
+<p><strong>ポイント: 入門したての人は、まず簡単な例を自分の目で確かめる。</strong></p>
+</div>
+<div id="の段をfor文で書く" class="section level2">
+<h2>1の段をfor文で書く</h2>
+<p>わざわざfor文を書かずに書くことで、「後ろの数が1つずつ増えていくだけじゃん」と気づくことができました。そこでfor文の出番です。</p>
+<pre class="python"><code>for i in range(1, 10, 1): # iは1から始まって1ずつ増加し、10になったら終了する。
+    answer = 1*i
+    print(answer)</code></pre>
+<pre><code>## 1
+## 2
+## 3
+## 4
+## 5
+## 6
+## 7
+## 8
+## 9</code></pre>
+<p>かんたんでしょ？</p>
+</div>
+</div>
+<div id="nの段までの九九を書く" class="section level1">
+<h1>nの段までの九九を書く</h1>
+<div id="for文を使わずに" class="section level2">
+<h2>for文を使わずに</h2>
+<p>1の段を書けたので、同じ用に2の段, 3の段, …と書いていきましょう。</p>
+<p>2の段は2×1, 2×2, 2×3, … ですから、2×iを作ればいいだけです。</p>
+<pre class="python"><code>for i in range(1, 10, 1): # iはから始まって1ずつ増加し、10になったら終了する。
+    answer = 2*i # 2にすればいいだけ
+    print(answer)</code></pre>
+<pre><code>## 2
+## 4
+## 6
+## 8
+## 10
+## 12
+## 14
+## 16
+## 18</code></pre>
+<p>続いて3の段</p>
+<pre class="python"><code>for i in range(1, 10, 1): # iはから始まって1ずつ増加し、10になったら終了する。
+    answer = 3*i # 3にすればいいだけ
+    print(answer)</code></pre>
+<pre><code>## 3
+## 6
+## 9
+## 12
+## 15
+## 18
+## 21
+## 24
+## 27</code></pre>
+<p>続いて4の段</p>
+<pre class="python"><code>for i in range(1, 10, 1): # iはから始まって1ずつ増加し、10になったら終了する。
+    answer = 4*i # 4にすればいいだけ
+    print(answer)</code></pre>
+<pre><code>## 4
+## 8
+## 12
+## 16
+## 20
+## 24
+## 28
+## 32
+## 36</code></pre>
+<p>以下略…</p>
+<p><br></p>
+<p>結局 × の前の数字が1つずつ増えていくだけですね。<strong>1つずつ増やしたい…nの段まで増やしたい…n+1は表示したくない…</strong></p>
+<p>そうです、またもやfor文の出番です。for文を使って表しましょう。</p>
+<pre class="python"><code>for i in range(1, 4, 1): # 例として3の段まで
+    for j in range(1, 10, 1):
+        answer = i*j
+        print(answer)</code></pre>
+<pre><code>## 1
+## 2
+## 3
+## 4
+## 5
+## 6
+## 7
+## 8
+## 9
+## 2
+## 4
+## 6
+## 8
+## 10
+## 12
+## 14
+## 16
+## 18
+## 3
+## 6
+## 9
+## 12
+## 15
+## 18
+## 21
+## 24
+## 27</code></pre>
+<p><strong>このように、表したい具体的な事象を抽象化してコードに翻訳していくことが重要です。
+目指すコードは抽象的ですが、最初から抽象的なコードを書くのは困難です。
+コードを考えるときは、初学者ほど具体例を作るべきだと思います。</strong></p>
+</div>
+</div>
+<div id="完成形を作る" class="section level1">
+<h1>完成形を作る</h1>
+<div id="要件に合わせる" class="section level2">
+<h2>要件に合わせる</h2>
+<p>いい感じで九九を書けていますね！</p>
+<p>ただ、かぶっている九九を表示したくないわけです。例えば1×2と2×1は被っている。2×1を消したい。
+<strong>だから、2の段は2から始まってほしい。3の段は3から始まってほしい。4の段は4から…</strong></p>
+<p><strong>そうですね、aの段はaから始まればよいだけです。また具体例に助けられました。コードを修正しましょう。</strong></p>
+<pre class="python"><code>for i in range(1, 3, 1): # 例として2の段まで
+    for j in range(i, 10, 1):
+        answer = i*j
+        print(answer)</code></pre>
+<pre><code>## 1
+## 2
+## 3
+## 4
+## 5
+## 6
+## 7
+## 8
+## 9
+## 4
+## 6
+## 8
+## 10
+## 12
+## 14
+## 16
+## 18</code></pre>
+</div>
+<div id="体裁を整える" class="section level2">
+<h2>体裁を整える</h2>
+<p>最後に体裁を整えましょう。</p>
+<ul>
+<li>1の段、2の段と、何の段かを明示する</li>
+<li>九九の結果だけでなく、かける数かけられる数を記載する</li>
+</ul>
+<p>f文字列を使います。(こういうのは慣れなだけ)</p>
+<pre class="python"><code>for i in range(1, 3, 1):
+        print(f&#39;&#39;&#39;{i}の段&#39;&#39;&#39;)
+        for j in range(i, 10, 1):
+            answer = i*j
+            print(f&#39;&#39;&#39;{i} × {j} = {answer}&#39;&#39;&#39;)</code></pre>
+<pre><code>## 1の段
+## 1 × 1 = 1
+## 1 × 2 = 2
+## 1 × 3 = 3
+## 1 × 4 = 4
+## 1 × 5 = 5
+## 1 × 6 = 6
+## 1 × 7 = 7
+## 1 × 8 = 8
+## 1 × 9 = 9
+## 2の段
+## 2 × 2 = 4
+## 2 × 3 = 6
+## 2 × 4 = 8
+## 2 × 5 = 10
+## 2 × 6 = 12
+## 2 × 7 = 14
+## 2 × 8 = 16
+## 2 × 9 = 18</code></pre>
+<p>きれいに出力できましたね！</p>
+<p>最後にnの段まで返す関数にしておしまいです。</p>
+<pre class="python"><code># 解答例
+def TimesTable(n):
+    for i in range(1, n+1, 1):
+        print(f&#39;&#39;&#39;{i}の段&#39;&#39;&#39;)
+        for j in range(i, 10, 1):
+            answer = i*j
+            print(f&#39;&#39;&#39;{i} × {j} = {answer}&#39;&#39;&#39;)
+
+TimesTable(2) # example: n=2</code></pre>
+<pre><code>## 1の段
+## 1 × 1 = 1
+## 1 × 2 = 2
+## 1 × 3 = 3
+## 1 × 4 = 4
+## 1 × 5 = 5
+## 1 × 6 = 6
+## 1 × 7 = 7
+## 1 × 8 = 8
+## 1 × 9 = 9
+## 2の段
+## 2 × 2 = 4
+## 2 × 3 = 6
+## 2 × 4 = 8
+## 2 × 5 = 10
+## 2 × 6 = 12
+## 2 × 7 = 14
+## 2 × 8 = 16
+## 2 × 9 = 18</code></pre>
+</div>
+</div>
+<div id="まとめ" class="section level1">
+<h1>まとめ</h1>
+<p>完成しました！入門時点で大事な点は次の3つだと思います。</p>
+<ol style="list-style-type: decimal">
+<li>まずは簡単な例から。1番小さな例から始めよう。</li>
+<li>簡単で具体的なものを観察して、抽象化できると思ったらコードに反映させよう。</li>
+<li>コードを書くとき、やりたいこと説明できると完璧！1,2がしっかりできていれば、大丈夫です！</li>
+</ol>
+<p>そんじゃあね。</p>
+</div>
+
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2022-08-07-generateincomedata/" data-toggle="tooltip" data-placement="top" title="世帯収入の模擬データを作る">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/epidemiology" title="epidemiology">
+                            epidemiology
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/power" title="power">
+                            power
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/r" title="r">
+                            r
+                        </a>
+                        
+                        
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/toro-maguro/toro-maguro.github.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Sacoche" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fas fa-circle fa-stack-2x"></i>
+                               <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+            
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Sacoche 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

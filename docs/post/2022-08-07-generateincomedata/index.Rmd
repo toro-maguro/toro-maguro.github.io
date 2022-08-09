@@ -8,9 +8,13 @@ categories:
   - 自作関数
 tags:
   - Epidemiology
+  - R
 subtitle: ''
 description: ''
 image: ''
+output:
+  blogdown::html_page:
+    highlight: default
 ---
 
 # やること
