@@ -11,7 +11,7 @@ tags:
 subtitle: 'ちょっと面倒なプログラミングコードを書くプロセスを言語化した'
 description: ''
 image: ''
-showtoc: true
+showtoc: false
 ---
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/vs.min.css">
@@ -22,7 +22,7 @@ showtoc: true
 
 ちょっと複雑そうなプログラミング課題を1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、のプロセスを具体的に辿る
 
-## なぜプロセス?
+### なぜプロセス?
 
 初学者に必要なものは模範解答でも指示書でもなく、プロセスだと思うから。
 
@@ -35,18 +35,16 @@ showtoc: true
 (これも初心者向けpythonセッションで紹介したトピックで、
 [for文の気持ち](https://toro-maguro.github.io/post/2022-08-09-forlooppython/)の続きです。)
 
----
 
-## 内容
+### 内容
 
 「モンティ・ホール問題という確率論の有名な問題をpythonでシミュレーションすることで解く」というプロセスを明示する記事
 
-## 伝えたいこと
+###  伝えたいこと
 
 * コードを考えるときは、1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、というプロセスを通る。
 * 小さく作ることが大事
 
----
 
 # お題: モンティ・ホール問題
 
