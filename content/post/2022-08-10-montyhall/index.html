@@ -47,6 +47,11 @@ timezone: Asia/Tokyo
 <li>コードを考えるときは、1) 機能で分解、2) 機能ごとに関数化、3) 結合して動かす、というプロセスを通る。</li>
 <li>小さく作ることが大事</li>
 </ul>
+<p>関数化のメリットも触れます。</p>
+<ul>
+<li>単純に、同じ内容が重複して登場しないため、読みやすい</li>
+<li>もし修正すべき箇所がある場合、関数のコードを修正するだけで全体のコード・システムを修正できる (関数化されていなかったら、すべての修正箇所を探して修正しなくてはならない)</li>
+</ul>
 </div>
 </div>
 <div id="お題-モンティホール問題" class="section level1">
@@ -140,8 +145,8 @@ scenario_notswitch = SimulateMontyHall(switch = False)
 
 print(f&#39;&#39;&#39;選択肢を変える場合の景品獲得確率: {scenario_switch}, 
 選択肢を変えない場合: {scenario_notswitch}&#39;&#39;&#39;)</code></pre>
-<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6713, 
-## 選択肢を変えない場合: 0.3256</code></pre>
+<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6682, 
+## 選択肢を変えない場合: 0.3315</code></pre>
 </div>
 </div>
 <div id="機能を整理する" class="section level1">
@@ -188,7 +193,7 @@ print(f&#39;&#39;&#39;選択肢を変える場合の景品獲得確率: {scenari
 <p>ググれば、randomライブラリのrandint関数にであうはずです。試してみましょう。</p>
 <pre class="python"><code>import random
 random.randint(1,3)</code></pre>
-<pre><code>## 1</code></pre>
+<pre><code>## 2</code></pre>
 </div>
 <div id="小さく確認する" class="section level2">
 <h2>1-2: 小さく確認する</h2>
@@ -204,7 +209,7 @@ if answer_test == player_1st_test:
     print(f&#39;answer: {answer_test}, player: {player_1st_test}, result: 正解!&#39;)
 else:
     print(f&#39;answer: {answer_test}, player: {player_1st_test}, result: 残念!&#39;)</code></pre>
-<pre><code>## answer: 1, player: 1, result: 正解!</code></pre>
+<pre><code>## answer: 3, player: 2, result: 残念!</code></pre>
 </div>
 </div>
 <div id="機能2-モンティがドアを開ける機能を作ろう" class="section level1">
@@ -248,7 +253,12 @@ doorlist_test</code></pre>
 </div>
 <div id="関数化" class="section level2">
 <h2>2-3: 関数化</h2>
-<p>想像した通りに動いていました！ただ、これを何回も書くのは非常に読みにくいし冗長なコードになります。<strong>そこで関数化しましょう。</strong> この発想は”Don’t Repeat Yourself” というDRY原則に基づきます。</p>
+<p>想像した通りに動いていました！ただ、これを何回も書くのは非常に読みにくいし、修正や運用しにくいコードになります。<strong>そこで関数化しましょう。</strong> この発想は”Don’t Repeat Yourself” (情報を重複させない) というDRY原則に基づきます。</p>
+<p><strong>関数としてコード化することで、次のメリットがあります。</strong></p>
+<ul>
+<li>単純に、同じ内容が重複して登場しないため、読みやすい</li>
+<li>もし修正すべき箇所がある場合、関数のコードを修正するだけで全体のコード・システムを修正できる (関数化されていなかったら、すべての修正箇所を探して修正しなくてはならない)</li>
+</ul>
 <pre class="python"><code># モンティがドアを開ける関数
 def MontyOpenDoor(true, playerChoice):
     doorlist = [1, 2, 3]
@@ -276,7 +286,7 @@ monty_test = MontyOpenDoor(answer_test, player_1st_test)
 print(f&#39;&#39;&#39;正解: {answer_test}, プレイヤー: {player_1st_test} 
 モンティが開くドア: {monty_test}&#39;&#39;&#39;)</code></pre>
 <pre><code>## 正解: 2, プレイヤー: 2 
-## モンティが開くドア: 1</code></pre>
+## モンティが開くドア: 3</code></pre>
 </div>
 </div>
 <div id="機能3-選択肢を変える機能を作る" class="section level1">
@@ -342,10 +352,10 @@ def SimulateMontyHall(switch, iterations=10000):
 では実行します！</p>
 <pre class="python"><code># 選択肢を変えるシナリオ
 SimulateMontyHall(switch = True)</code></pre>
-<pre><code>## 0.661</code></pre>
+<pre><code>## 0.6682</code></pre>
 <pre class="python"><code># 選択肢を変えないシナリオ
 SimulateMontyHall(switch = False)</code></pre>
-<pre><code>## 0.3276</code></pre>
+<pre><code>## 0.3326</code></pre>
 </div>
 <div id="まとめ" class="section level1">
 <h1>まとめ</h1>
@@ -418,6 +428,6 @@ scenario_notswitch = SimulateMontyHall(switch = False)
 
 print(f&#39;&#39;&#39;選択肢を変える場合の景品獲得確率: {scenario_switch}, 
 選択肢を変えない場合: {scenario_notswitch}&#39;&#39;&#39;)</code></pre>
-<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6558, 
-## 選択肢を変えない場合: 0.3347</code></pre>
+<pre><code>## 選択肢を変える場合の景品獲得確率: 0.6626, 
+## 選択肢を変えない場合: 0.3298</code></pre>
 </div>
