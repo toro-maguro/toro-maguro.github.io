@@ -29,9 +29,9 @@ home = ["HTML", "RSS", "Algolia"]
 
   # algolia site search
   algolia_search = true
-  algolia_appId = ""
-  algolia_indexName = ""
-  algolia_apiKey = ""
+  algolia_appId = "7OZKMIZOVB"
+  algolia_indexName = "gh-pages"
+  algolia_apiKey = "b4ce0e24b6e4465cb7d5760ae440b679"
 
   # Sidebar settings
   sidebar_about_description = "Master of Public Health, data analysit, and data infrastructure enginner | Be a knowledge creator"

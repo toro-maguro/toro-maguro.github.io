@@ -34,7 +34,7 @@ timezone: Asia/Tokyo
 
 そこで、模範解答でもなく指示書でもなく、プロセスをたどることで理解が深まるのでは？という発想です。<br>
 (これも初心者向けpythonセッションで紹介したトピックで、
-[for文の気持ち](https://toro-maguro.github.io/post/2022-08-09-forlooppython/)の続きです。)
+[for文の気持ち](https://toro-maguro.github.io/post/2022-08-10-forloop/)の続きです。)
 
 
 ### 内容
