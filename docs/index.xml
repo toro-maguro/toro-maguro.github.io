@@ -6,7 +6,16 @@
     <description>Recent content on Sacoche</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
-    <lastBuildDate>Tue, 09 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 10 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>所得を平均で見ちゃダメってどういう意味なの？</title>
+      <link>https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/</link>
+      <pubDate>Wed, 10 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/</guid>
+      <description>はじめに ほんとのきっかけ ネットで男女格差の話が目に止まった 賃金格差で、まーた平均の話してるよ、と思った そういやこういう話、大学院でもあったな</description>
+    </item>
+    
     <item>
       <title>Monty Hall問題をpythonで解く</title>
       <link>https://toro-maguro.github.io/post/2022-08-10-montyhall/</link>
