@@ -1,7 +1,7 @@
 ---
 title: 所得を平均で見ちゃダメってどういう意味なの？
 author: ''
-date: '2022-08-10'
+date: '2022-08-11'
 slug: []
 categories:
   - Epidemiology
@@ -39,7 +39,7 @@ output:
 
 「所得の平均値」や「貯金の平均値」を見てびっくりしたことはありませんか？僕/私の年収・貯金少なすぎ...?と驚くやつです。
 
-まあ、この辺は聞き飽きた方もいるでしょう。
+まあ、この辺は聞き飽きた方もいるでしょう。 
 **所得は偏った（右に裾）分布をしており、平均値の代表性が損なわれている**という話です。
 もう少し丁寧に説明すると、一部の高所得者の影響で、平均が引っ張られてしまい、集団の代表値として使いにくくなっているということですね。
 
@@ -193,11 +193,11 @@ type1_log_res <- sapply(n, ReturnSignificantProbability,
                         diff_income = 0,
                         log_transform = TRUE)
 
-d_result <- data.frame(group = c(rep("crude", 20), rep("log", 20)), N = rep(n,2), 
+d_result <- data.frame(group = c(rep("crude", 10), rep("log", 10)), N = rep(n,2), 
                        type1error = c(type1_crude_res, type1_log_res))
 plot1 <- ggplot(data = d_result, aes(x = N, y = type1error, group = group, colour = group)) + 
   geom_line() +
-  ylim(c(0, 0.5)) +
+  ylim(c(0, 0.1)) +
   theme_bw() +
   guides(colour = guide_legend(reverse = TRUE))
 ```
@@ -239,7 +239,7 @@ power_log_res <- sapply(n, ReturnSignificantProbability,
                         diff_income = difference_income,
                         log_transform = TRUE)
 
-d_result <- data.frame(group = c(rep("crude", 20), rep("log", 20)), N = rep(n,2), 
+d_result <- data.frame(group = c(rep("crude", 10), rep("log", 10)), N = rep(n,2), 
                        power = c(power_crude_res, power_log_res))
 plot2 <- ggplot(data = d_result, aes(x = N, y = power, group = group, colour = group)) + 
   geom_line() + 

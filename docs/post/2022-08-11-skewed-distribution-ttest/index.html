@@ -36,7 +36,7 @@
 
     <title>所得を平均で見ちゃダメってどういう意味なの？ | Sacoche</title>
 
-    <link rel="canonical" href="/post/2022-08-10-skewed-distribution/">
+    <link rel="canonical" href="/post/2022-08-11-skewed-distribution-ttest/">
 
     
     
@@ -198,7 +198,7 @@
                                     Sacoche
                              
                             on 
-                            Wednesday, August 10, 2022
+                            Thursday, August 11, 2022
                             
                             
                             
@@ -225,7 +225,7 @@
 
                 
                 
-<script src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/header-attrs/header-attrs.js"></script>
+<script src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/header-attrs/header-attrs.js"></script>
 <style type="text/css">
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
@@ -321,7 +321,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 もう少し丁寧に説明すると、一部の高所得者の影響で、平均が引っ張られてしまい、集団の代表値として使いにくくなっているということですね。</p>
 <p>実際の分布は次のとおりです (source: <a href="https://www.mhlw.go.jp/toukei/saikin/hw/k-tyosa/k-tyosa19/index.html">URL</a>)。</p>
 <div class="figure">
-<img src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/income.png" alt="" />
+<img src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/income.png" alt="" />
 <p class="caption">所得の分布状況 (令和元年度国民生活基礎調査)</p>
 </div>
 <p>しかし、単に「代表値としての性質に問題がある」という話では、少し物足りません。
@@ -364,7 +364,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>この言葉だけ聞いてもよくわからないので、実際に確認してみましょう。</p>
 <div id="実演" class="section level2">
 <h2>実演</h2>
-<p>500人ほどデータを作成し、分布を確認してみましょう。
+<p>1000人ほどデータを作成し、分布を確認してみましょう。
 <a href="https://toro-maguro.github.io/post/2022-08-07-generateincomedata/">世帯収入の記事</a>のコードを読み込みます。</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, randomizeR)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;./index_files/generate_income.R&quot;</span>) <span class="co"># 今回使う自作関数をまとめた.Rファイル</span></span></code></pre></div>
@@ -382,22 +382,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;distribution of annual income (crude)&quot;</span>) <span class="sc">+</span> </span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">20000000</span>))</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>hist1</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>続いて、対数変換を行った所得分布です。先程同様青は平均値を、赤線は中央値を表します。</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_income =</span> <span class="fu">log</span>(income))</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>log_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(df<span class="sc">$</span>log_income)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>log_median <span class="ot">&lt;-</span> <span class="fu">median</span>(df<span class="sc">$</span>log_income)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>hist2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="fu">aes</span>(<span class="at">x =</span> log_income)) <span class="sc">+</span> </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">50</span>) <span class="sc">+</span> </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> log_mean, <span class="at">colour =</span> <span class="st">&quot;blue&quot;</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> log_median, <span class="at">colour =</span> <span class="st">&quot;red&quot;</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;distribution of logged annual income&quot;</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>hist2 </span></code></pre></div>
-<p><img src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_income =</span> <span class="fu">log</span>(income))</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>log_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(df<span class="sc">$</span>log_income)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>log_median <span class="ot">&lt;-</span> <span class="fu">median</span>(df<span class="sc">$</span>log_income)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>hist2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> df, <span class="fu">aes</span>(<span class="at">x =</span> log_income)) <span class="sc">+</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">50</span>) <span class="sc">+</span> </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> log_mean, <span class="at">colour =</span> <span class="st">&quot;blue&quot;</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> log_median, <span class="at">colour =</span> <span class="st">&quot;red&quot;</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span> </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;distribution of logged annual income&quot;</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>hist2 </span></code></pre></div>
+<p><img src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <p>やはり対数変換することで、平均値の集団代表性が高くなることがわかりますね！
 けれど、<strong>今回やりたいことは分布とtype 1 &amp; 2 errorの問題です。代表性という主観的な話ではありません。</strong>
 「未処理のまま分析してはなぜいけないか」を具体的に捉えていくために、シミュレーションを進めていきましょう。</p>
@@ -415,90 +414,92 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>2群でt検定を実施し、有意な差があるかを確認。そのまま使う場合 or 対数変換する場合の2通りを用意。</li>
 <li>1-4を試行回数分実行し、有意になる確率を返す</li>
 </ol>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ReturnSignificantProbability <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sample, <span class="at">iterations =</span> <span class="dv">1000</span>, <span class="at">diff_income =</span> <span class="dv">0</span>, <span class="at">log_transform =</span> <span class="cn">FALSE</span>){</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">numeric</span>(iterations)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>iterations) {</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(i)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> <span class="fu">MakeData</span>(n_sample)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">group =</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> <span class="fl">0.5</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">income =</span> income <span class="sc">+</span> group<span class="sc">*</span>diff_income) <span class="sc">%&gt;%</span> <span class="co"># group1は指定した分多い</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">log_income =</span> <span class="fu">log</span>(income))</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    groupA <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(group <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    groupB <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(group <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (log_transform <span class="sc">==</span> <span class="cn">FALSE</span>){</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>      ttest_result <span class="ot">&lt;-</span> <span class="fu">t.test</span>(groupA<span class="sc">$</span>income, groupB<span class="sc">$</span>income)</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (log_transform <span class="sc">==</span> <span class="cn">TRUE</span>){</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>      ttest_result <span class="ot">&lt;-</span> <span class="fu">t.test</span>(groupA<span class="sc">$</span>log_income, groupB<span class="sc">$</span>log_income)</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    result[i] <span class="ot">&lt;-</span> <span class="fu">if_else</span>(ttest_result[[<span class="st">&quot;p.value&quot;</span>]] <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="dv">1</span>, <span class="dv">0</span>) <span class="co"># 有意であれば1</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">mean</span>(result))</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fu">ReturnSignificantProbability</span>(<span class="at">n_sample =</span> <span class="dv">100</span>, <span class="at">iterations =</span> <span class="dv">100</span>, <span class="at">diff_income =</span> <span class="dv">100000</span>, <span class="at">log_transform =</span> T)</span></code></pre></div>
-<pre><code>## [1] 0.1</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ReturnSignificantProbability <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sample, <span class="at">iterations =</span> <span class="dv">1000</span>, <span class="at">diff_income =</span> <span class="dv">0</span>, <span class="at">log_transform =</span> <span class="cn">FALSE</span>){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">numeric</span>(iterations)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>iterations) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(i)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> <span class="fu">MakeData</span>(n_sample)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">group =</span> <span class="fu">rbinom</span>(<span class="at">n =</span> <span class="fu">nrow</span>(df), <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> <span class="fl">0.5</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">income =</span> income <span class="sc">+</span> group<span class="sc">*</span>diff_income) <span class="sc">%&gt;%</span> <span class="co"># group1は指定した分多い</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">log_income =</span> <span class="fu">log</span>(income))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    groupA <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(group <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    groupB <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">filter</span>(group <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (log_transform <span class="sc">==</span> <span class="cn">FALSE</span>){</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>      ttest_result <span class="ot">&lt;-</span> <span class="fu">t.test</span>(groupA<span class="sc">$</span>income, groupB<span class="sc">$</span>income)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (log_transform <span class="sc">==</span> <span class="cn">TRUE</span>){</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>      ttest_result <span class="ot">&lt;-</span> <span class="fu">t.test</span>(groupA<span class="sc">$</span>log_income, groupB<span class="sc">$</span>log_income)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    result[i] <span class="ot">&lt;-</span> <span class="fu">if_else</span>(ttest_result[[<span class="st">&quot;p.value&quot;</span>]] <span class="sc">&lt;</span> <span class="fl">0.05</span>, <span class="dv">1</span>, <span class="dv">0</span>) <span class="co"># 有意であれば1</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">mean</span>(result))</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="type-1-errorの問題" class="section level2">
 <h2>type 1 errorの問題</h2>
 <p>同じ分布からランダムに所得を発生させ、2グループに分割し、「差がある」と判定される確率を計算しましょう。</p>
 <p>同じ分布からデータを生んでいるので、本来差はありません。
 <strong>本来差がないはずなのに、偶然差があると判定されること、すなわちtype 1 errorですね！</strong></p>
-<p>人数は40人から800人で試しています (片群なら20-400人, 20人ずつチェック)。</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="dv">40</span>, <span class="at">to=</span><span class="dv">800</span>, <span class="at">by=</span><span class="dv">40</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>type1_crude_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">iterations =</span> <span class="dv">100</span>, </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">diff_income =</span> <span class="dv">0</span>, <span class="co"># αエラーなのでグループ間のincomeの差を0にする</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">log_transform =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>type1_log_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">iterations =</span> <span class="dv">100</span>, </span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">diff_income =</span> <span class="dv">0</span>,</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">log_transform =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>d_result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;crude&quot;</span>, <span class="dv">20</span>), <span class="fu">rep</span>(<span class="st">&quot;log&quot;</span>, <span class="dv">20</span>)), <span class="at">N =</span> <span class="fu">rep</span>(n,<span class="dv">2</span>), </span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type1error =</span> <span class="fu">c</span>(type1_crude_res, type1_log_res))</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d_result, <span class="fu">aes</span>(<span class="at">x =</span> N, <span class="at">y =</span> type1error, <span class="at">group =</span> group, <span class="at">colour =</span> group)) <span class="sc">+</span> </span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>)) <span class="sc">+</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<p>人数は両群合計100人から1000人で試しています (片群なら50-500人, 50人ずつチェック)。</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from=</span><span class="dv">100</span>, <span class="at">to=</span><span class="dv">1000</span>, <span class="at">by=</span><span class="dv">100</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>type1_crude_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">iterations =</span> <span class="dv">1000</span>, </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">diff_income =</span> <span class="dv">0</span>, <span class="co"># αエラーなのでグループ間のincomeの差を0にする</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">log_transform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>type1_log_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">iterations =</span> <span class="dv">1000</span>, </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">diff_income =</span> <span class="dv">0</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">log_transform =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>d_result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;crude&quot;</span>, <span class="dv">10</span>), <span class="fu">rep</span>(<span class="st">&quot;log&quot;</span>, <span class="dv">10</span>)), <span class="at">N =</span> <span class="fu">rep</span>(n,<span class="dv">2</span>), </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                       <span class="at">type1error =</span> <span class="fu">c</span>(type1_crude_res, type1_log_res))</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d_result, <span class="fu">aes</span>(<span class="at">x =</span> N, <span class="at">y =</span> type1error, <span class="at">group =</span> group, <span class="at">colour =</span> group)) <span class="sc">+</span> </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<p>では図を確認しましょう。</p>
 <p>横軸は人数 (両群) を表し、縦軸は「有意な差がある」と判断された確率 (=type 1 error) を表します。
 そのまま計算しても対数変換しても、人数に依存せず5%付近を推移しており、大きな差は無いように見えます。</p>
 <p>この結果を踏まえると、所得のように偏った分布のデータで未処理のまま統計モデリング・仮説検定を行っても、type 1 errorに影響はないと考えられます（要注意: 1つの実験しかしていないので、理論的にどうとかわかってない）</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plot1</span></code></pre></div>
-<p><img src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<p>type 1 errorに問題はなさそうですね！！！</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plot1</span></code></pre></div>
+<p><img src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>type 1 errorに関しては、所得を単純に平均で見ても大きな問題はなさそうですね。
+(代表性にはもちろん問題ありますよ)</p>
 </div>
 <div id="type-2-error-検出力-power" class="section level2">
 <h2>type 2 error (検出力, power)</h2>
 <p>続いて、type 2 error (power) です。</p>
 <p>今回は2分割したグループ間に50万円の差を作ります。<br>
 一方のグループにのみ、50万円プレゼントしました。</p>
-<p>したがって、「本来差があるものを『統計的に差がある』と言えるか？」を扱っていきます。結果は次の通りです！！！</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>power_crude_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">iterations =</span> <span class="dv">1000</span>,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">diff_income =</span> <span class="dv">500000</span>, <span class="co"># グループ間のincomeの差を50万円に</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">log_transform =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>power_log_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">iterations =</span> <span class="dv">1000</span>,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">diff_income =</span> <span class="dv">500000</span>, <span class="co"># グループ間のincomeの差を50万円に</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">log_transform =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>d_result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;crude&quot;</span>, <span class="dv">20</span>), <span class="fu">rep</span>(<span class="st">&quot;log&quot;</span>, <span class="dv">20</span>)), <span class="at">N =</span> <span class="fu">rep</span>(n,<span class="dv">2</span>), </span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                       <span class="at">power =</span> <span class="fu">c</span>(power_crude_res, power_log_res))</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d_result, <span class="fu">aes</span>(<span class="at">x =</span> N, <span class="at">y =</span> power, <span class="at">group =</span> group, <span class="at">colour =</span> group)) <span class="sc">+</span> </span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
+<p>したがって、「本来差があるものを『統計的に差がある』と言えるか？」を扱っていきます。</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>difference_income <span class="ot">&lt;-</span> <span class="dv">500000</span> <span class="co"># グループ間のincomeの差を50万円に</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>power_crude_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">iterations =</span> <span class="dv">1000</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">diff_income =</span> difference_income, </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">log_transform =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>power_log_res <span class="ot">&lt;-</span> <span class="fu">sapply</span>(n, ReturnSignificantProbability,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                        <span class="at">iterations =</span> <span class="dv">1000</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                        <span class="at">diff_income =</span> difference_income,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                        <span class="at">log_transform =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>d_result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">group =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">&quot;crude&quot;</span>, <span class="dv">10</span>), <span class="fu">rep</span>(<span class="st">&quot;log&quot;</span>, <span class="dv">10</span>)), <span class="at">N =</span> <span class="fu">rep</span>(n,<span class="dv">2</span>), </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                       <span class="at">power =</span> <span class="fu">c</span>(power_crude_res, power_log_res))</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> d_result, <span class="fu">aes</span>(<span class="at">x =</span> N, <span class="at">y =</span> power, <span class="at">group =</span> group, <span class="at">colour =</span> group)) <span class="sc">+</span> </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span> </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_legend</span>(<span class="at">reverse =</span> <span class="cn">TRUE</span>))</span></code></pre></div>
 <p>横軸は人数 (両群) を表し、縦軸は「有意な差がある」と判断された確率 (=power) を表します。
 先程とは違い、今回は「差がある」というシナリオを考えているので、縦軸が上に行くほど適切と考えます。</p>
 <p><strong>全くもって違う結果に…！！！</strong></p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>plot2</span></code></pre></div>
-<p><img src="https://toro-maguro.github.io/post/2022-08-10-skewed-distribution/index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p>人数が増えるほどpowerは増えますが、増え方が全く違いますね！適切な統計モデリングを行うことで、powerを十分確保することができます。</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plot2</span></code></pre></div>
+<p><img src="https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>人数が増えるほどpowerは増えますが、増え方が全く違いますね！
+適切な統計モデリングを行うことで、powerを十分に確保することができます。</p>
 <p><br></p>
 </div>
 </div>
