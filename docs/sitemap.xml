@@ -3,24 +3,33 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://toro-maguro.github.io/categories/</loc>
-    <lastmod>2022-08-11T00:00:00+00:00</lastmod>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/post/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/r/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/statistics/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/categories/statistics/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/post/2022-08-18-correlation-regression/</loc>
+    <lastmod>2022-08-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/tags/epidemiology/</loc>
     <lastmod>2022-08-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/categories/epidemiology/</loc>
-    <lastmod>2022-08-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/post/</loc>
-    <lastmod>2022-08-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/tags/r/</loc>
-    <lastmod>2022-08-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/</loc>
-    <lastmod>2022-08-11T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/tags/</loc>
     <lastmod>2022-08-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/</loc>

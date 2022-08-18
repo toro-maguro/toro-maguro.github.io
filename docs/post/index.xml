@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Sacoche</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
-    <lastBuildDate>Thu, 11 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>相関と回帰は同じわけじゃない</title>
+      <link>https://toro-maguro.github.io/post/2022-08-18-correlation-regression/</link>
+      <pubDate>Thu, 18 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-18-correlation-regression/</guid>
+      <description>はじめに 相関していることと、回帰分析の回帰係数が0でないことは概ね同じような感覚を持っていたけれど、もうちょっと違う理解の方がいいかもって感</description>
+    </item>
+    
     <item>
       <title>所得を平均で見ちゃダメってどういう意味なの？</title>
       <link>https://toro-maguro.github.io/post/2022-08-11-skewed-distribution-ttest/</link>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Statistics on Sacoche</title>
+    <link>https://toro-maguro.github.io/categories/statistics/</link>
+    <description>Recent content in Statistics on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja</language>
+    <lastBuildDate>Thu, 18 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/statistics/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>相関と回帰は同じわけじゃない</title>
+      <link>https://toro-maguro.github.io/post/2022-08-18-correlation-regression/</link>
+      <pubDate>Thu, 18 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-18-correlation-regression/</guid>
+      <description>はじめに 相関していることと、回帰分析の回帰係数が0でないことは概ね同じような感覚を持っていたけれど、もうちょっと違う理解の方がいいかもって感</description>
+    </item>
+    
+  </channel>
+</rss>
