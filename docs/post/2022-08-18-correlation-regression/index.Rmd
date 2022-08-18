@@ -1,0 +1,122 @@
+---
+title: 相関と回帰は同じわけじゃない
+author: 
+date: '2022-08-18'
+slug: []
+categories:
+  - Statistics
+tags:
+  - Statistics
+  - R
+subtitle: ''
+description: ''
+image: ''
+output:
+  blogdown::html_page:
+    highlight: default
+---
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({
+ tex2jax: {
+ inlineMath: [['$', '$'] ],
+ displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+ }
+ });
+</script>
+
+# はじめに
+
+相関していることと、回帰分析の回帰係数が0でないことは概ね同じような感覚を持っていたけれど、もうちょっと違う理解の方がいいかもって感じた話。
+
+* 相関係数: 2変数のばらつき方を表す指標
+* 回帰係数: xからyを予測する回帰直線の係数で、あくまでx→yという話
+
+NOTE: この記事では、相関係数はピアソンの相関係数、回帰係数はOLSで求める線形回帰の回帰係数について話します。
+
+# 例1
+
+ちょっと極端な例かもしれないが、2つのデータセットを用意して、「回帰係数は変わらないけど相関係数は変わる」を具体的にする。
+
+## データA
+
+y=xの関係でデータを作る。<br>
+この場合、明らかに相関係数は1だし、回帰式も (当然だけど) y=xで回帰係数は1。
+
+```{r}
+pacman::p_load(tidyverse)
+
+d1 <- data.frame(x = c(1:10), y = c(1:10))
+plot1 <- ggplot(data = d1, aes(x = x, y = y)) +
+  geom_point() + 
+  theme_bw()
+plot1
+```
+
+```{r}
+cor.test(d1$x, d1$y)
+```
+
+```{r, message=F, warning=FALSE, error=F}
+fit1 <- lm(y ~ x, data = d1)
+summary(fit1)
+```
+
+## データB
+
+xが増えるとyも1増えるという関係はそのままに、y=x+interceptの切片の値をいくつか用意します。
+
+xは1から10として、次のデータを用意
+
+* y = x
+* y = x + 10
+* y = x + 20
+* y = x + 30
+
+```{r}
+d2 <- data.frame(x = rep(c(1:10), 4), y = c(1:10, 11:20, 21:30, 31:40))
+plot2 <- ggplot(data = d2, aes(x = x, y = y)) +
+  geom_point() + 
+  theme_bw()
+plot2
+```
+
+```{r}
+cor.test(d2$x, d2$y)
+```
+
+```{r, echo=FALSE}
+cor1 <- cor.test(d1$x, d1$y)
+cor2 <- cor.test(d2$x, d2$y)
+```
+
+
+```{r, message=F, warning=FALSE}
+fit2 <- lm(y ~ x, data = d2)
+summary(fit2)
+```
+
+回帰係数は`r fit2[["coefficients"]][["x"]]`でずっと1の
+
+||Data A|Data B|
+|:-------:|:-----------------:|:----------------:|
+|相関係数|`r cor1[["estimate"]][["cor"]]`|`r cor2[["estimate"]][["cor"]]`|
+|回帰係数|`r fit1[["coefficients"]][["x"]]`|`r fit2[["coefficients"]][["x"]]`|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

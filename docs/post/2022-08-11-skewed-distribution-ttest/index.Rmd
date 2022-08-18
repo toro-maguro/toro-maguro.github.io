@@ -5,6 +5,7 @@ date: '2022-08-11'
 slug: []
 categories:
   - Epidemiology
+  - Statistics
 tags:
   - Epidemiology
   - R
