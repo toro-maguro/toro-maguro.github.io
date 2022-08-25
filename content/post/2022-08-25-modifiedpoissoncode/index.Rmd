@@ -108,7 +108,7 @@ head(df)
 `PrintNumberAnalyzed()` も、`GetConfint()` のどちらも、`glm()`の結果を引数とします。以下のような使い方です。
 
 ```{r}
-fit1 <- adjusted <- glm(y ~ x + income_cat_observed, data = df, family = poisson(link = "log"))
+fit1 <- glm(y ~ x + income_cat_observed, data = df, family = poisson(link = "log"))
 # 標準glmはリストワイズ除去なので、解析対象者が減る
 PrintNumberAnalyzed(fit1)
 

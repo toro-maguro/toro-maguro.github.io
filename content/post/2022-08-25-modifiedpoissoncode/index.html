@@ -239,7 +239,7 @@ Rの<code>glm()</code>ではロバスト分散による信頼区間を得るこ�
 <div id="修正ポアソン回帰" class="section level3">
 <h3>修正ポアソン回帰</h3>
 <p><code>PrintNumberAnalyzed()</code> も、<code>GetConfint()</code> のどちらも、<code>glm()</code>の結果を引数とします。以下のような使い方です。</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> adjusted <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">+</span> income_cat_observed, <span class="at">data =</span> df, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">&quot;log&quot;</span>))</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">+</span> income_cat_observed, <span class="at">data =</span> df, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">&quot;log&quot;</span>))</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 標準glmはリストワイズ除去なので、解析対象者が減る</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">PrintNumberAnalyzed</span>(fit1)</span></code></pre></div>
 <pre><code>## [1] &quot;number of analysed samples: N=6991, 69.9% of data was included in this analysis&quot;</code></pre>
