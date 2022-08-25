@@ -4,11 +4,11 @@ author: ''
 date: '2022-08-07'
 slug: []
 categories:
-  - Epidemiology
   - 自作関数
 tags:
   - Epidemiology
   - R
+  - 自作関数
 subtitle: ''
 description: ''
 image: ''

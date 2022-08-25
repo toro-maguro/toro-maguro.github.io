@@ -1,0 +1,177 @@
+---
+title: 修正ポアソン回帰を使った研究でよく使ったコードを関数として残す
+author: ''
+date: '2022-08-25'
+slug: []
+categories:
+  - 自作関数
+tags:
+  - 自作関数
+  - Epidemiology
+  - R
+subtitle: 'ロバスト分散に基づく信頼区間を出す、欠測値補完・多重代入データでの分析での信頼区間を出す関数'
+description: ''
+image: ''
+output:
+  blogdown::html_page:
+    highlight: default
+    df_print: kable
+---
+
+# はじめに
+
+2値のアウトカムに関して、イベント発生割合が10%を超える場面ではオッズ比がリスク比 (有病率比) の良い近似にならないことから、定番のロジスティック回帰の使用が不適切になる場面があります。
+
+(参考: [修正ポアソン回帰](https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/)、[リスク比とオッズ比の乖離](https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/))
+
+こうした場合ロバスト分散を使ったポアソン回帰を使うことがありますが、
+Rの`glm()`ではロバスト分散による信頼区間を得ることができません。
+
+いちいち、コードベタ打ちするのは **Don't Repeat Yourself (コードを繰り返すな！)** の原則に反しますし、何よりめんどくさい。(参考: [MontyHall問題](https://toro-maguro.github.io/post/2022-08-10-montyhall/))
+
+そこで、関数化してソースコードとして置いておくと非常に楽です。やりましょう。
+
+# コード
+
+```{r}
+pacman::p_load(lmtest, sandwich)
+
+# 修正ポアソン回帰の点推定値, 信頼区間, p値をデータフレームで返す
+GetConfint <- function(model_result, siglevel=0.05, digits=4){
+  res_coeftest <- coeftest(model_result, vcov = sandwich)
+  
+  Estimate <- round(exp(res_coeftest[,1]), digits)
+  LowerCI <- round(exp(res_coeftest[,1] + qnorm(siglevel/2)*res_coeftest[,2]), digits)
+  UpperCI <- round(exp(res_coeftest[,1] - qnorm(siglevel/2)*res_coeftest[,2]), digits)
+  p_value <- round(res_coeftest[,4], digits)
+  
+  result <- data.frame(Estimate, LowerCI, UpperCI, p_value)
+  
+  return(result)
+}
+
+# 解析人数をprintする関数
+PrintNumberAnalyzed <- function(model_result){
+  n_sample <- length(model_result[["residuals"]])
+  sample_usage_proportion <- round(n_sample*100 / nrow(model_result[["data"]]), 1)
+  message_n_sample <- paste0("number of analysed samples: N=", n_sample, ", ", 
+                             sample_usage_proportion, "% of data was included in this analysis")
+  
+  return(message_n_sample)
+}
+
+# miceで多重代入したデータで解析した結果に対し、点推定値・信頼区間・p値を出力する関数
+GetConfint_mi <- function(with_result_mi, siglevel=0.05, digits=4){
+  
+  result_mi <- summary(pool(with_result_mi))
+  
+  variables <- as.character(result_mi[,1])
+  Estimate <- round(exp(result_mi[,2]), digits)
+  LowerCI <- round(exp(result_mi[,2] + qnorm(siglevel/2)*result_mi[,3]), digits)
+  UpperCI <- round(exp(result_mi[,2] - qnorm(siglevel/2)*result_mi[,3]), digits)
+  p_value <- round(result_mi[,6], digits)
+  
+  result <- data.frame(variables, Estimate, LowerCI, UpperCI, p_value)
+  
+  return(result)
+}
+```
+
+# 使い方
+
+```{r}
+pacman::p_load(tidyverse, lmtest, sandwich, mice, miceadds)
+source("./index_files/myfunction.R") # 自作関数
+```
+
+適当にデータを作ります。これらのコードもソースコード 
+([GitHub](https://github.com/toro-maguro/toro-maguro.github.io/tree/main/content/post/2022-08-25-modifiedpoissoncode/index_files/myfunction.R)) 
+に入れていますので、興味あれば覗いてください。
+
+使う変数はこの通りです。
+
+* y: アウトカム、2値
+* x: 曝露変数、2値
+* income_cat: 交絡因子。income_catは真の値で、そこから欠測を発生させたものがincome_cat_observed。
+
+```{r}
+set.seed(1)
+d0 <- MakeData(n_sample = 10000, risk_ratio = 1.5) # 研究対象者数とリスク比を指定して、データを返す関数
+df <- GenerateMissing_MAR(d0) # incomeに対して、MARで欠測を発生させる関数
+head(df)
+```
+
+### 修正ポアソン回帰
+
+`PrintNumberAnalyzed()` も、`GetConfint()` のどちらも、`glm()`の結果を引数とします。以下のような使い方です。
+
+```{r}
+fit1 <- adjusted <- glm(y ~ x + income_cat_observed, data = df, family = poisson(link = "log"))
+# 標準glmはリストワイズ除去なので、解析対象者が減る
+PrintNumberAnalyzed(fit1)
+
+# 解析結果
+GetConfint(fit1)
+```
+
+
+### 多重代入のデータに対する修正ポアソン回帰
+
+#### 多重代入
+
+本論とは外れますが、多重代入の処理です。
+
+今回のデータは欠測発生前の真の値も含んでいるため、まず除外してから多重代入します。
+時間がかかると鬱陶しいので、多重代入データは3つだけで。
+
+```{r}
+df2 <- df %>% select(ID, sex, x, y, income_cat_observed) 
+imp <- mice(df2, m = 3, printFlag = FALSE, seed = 123) # defaultMethodは要確認、今回はpolrが適用される
+```
+
+いちおう、代入されているかを確認します。<br>
+income_cat_imputedは代入されたデータ、income_cat_trueは欠測発生前の真の値です。
+
+```{r}
+# action=nで作成したn番目の代入済みデータセットを確認できる
+miced_df <- complete(imp, action = 1) 
+
+# オリジナルのデータと比較する
+df_merge <- df %>% 
+  mutate(income_cat_true = income_cat) %>% 
+  mutate(income_missing = if_else(is.na(income_observed), 1, 0)) %>% 
+  select(ID, income_cat_true, income_missing)
+  
+miced_df <- left_join(miced_df, df_merge, by = "ID")
+
+# 確認
+miced_df %>% 
+  rename(income_cat_imputed = income_cat_observed) %>% 
+  head(10)
+```
+
+代入された値が真の値と一致しているかどうかは置いておいて、代入自体は正しくされていることがわかりました。
+
+#### 解析結果の出力
+
+本題です。多重代入データでの修正ポアソン回帰の結果を出力します。
+
+`GetConfint_mi()`は`with(imp, coeftest(glm()))`を引数とします。こんな感じ。
+
+```{r}
+fit2_mi <- with(imp, coeftest(glm(y ~ x + income_cat_observed, family = poisson(link = "log")), vcov = sandwich))
+GetConfint_mi(fit2_mi)
+```
+
+# おしまい
+
+備忘録的に残しておきました。
+
+コード長ったらしいと読む気失せるし修正するのも大変なので、できるだけ関数化して使い回しましょう。めっちゃ戒めです。
+
+そんじゃあね〜
+
+
+
+
+

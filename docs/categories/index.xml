@@ -6,7 +6,16 @@
     <description>Recent content in Categories on Sacoche</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
-    <lastBuildDate>Thu, 18 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 25 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>自作関数</title>
+      <link>https://toro-maguro.github.io/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</link>
+      <pubDate>Thu, 25 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Statistics</title>
       <link>https://toro-maguro.github.io/categories/statistics/</link>
@@ -31,15 +40,6 @@
       <pubDate>Tue, 09 Aug 2022 00:00:00 +0000</pubDate>
       
       <guid>https://toro-maguro.github.io/categories/coding-for-beginners/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>自作関数</title>
-      <link>https://toro-maguro.github.io/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</link>
-      <pubDate>Sun, 07 Aug 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://toro-maguro.github.io/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</guid>
       <description></description>
     </item>
     

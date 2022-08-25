@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <meta property="og:site_name" content="Sacoche">
+    <meta property="og:type" content="article">
+
+    
+    <meta property="og:image" content="https://toro-maguro.github.io/img/home-bg-jeep.jpg">
+    <meta property="twitter:image" content="https://toro-maguro.github.io/img/home-bg-jeep.jpg" />
+    
+
+    
+    <meta name="title" content="修正ポアソン回帰を使った研究でよく使ったコードを関数として残す" />
+    <meta property="og:title" content="修正ポアソン回帰を使った研究でよく使ったコードを関数として残す" />
+    <meta property="twitter:title" content="修正ポアソン回帰を使った研究でよく使ったコードを関数として残す" />
+    
+
+    
+    <meta name="description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz">
+    <meta property="og:description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz" />
+    <meta property="twitter:description" content="Epidemiology, Statistical modeling, data infrastructure, and data viz" />
+    
+
+    
+    <meta property="twitter:card" content="summary" />
+    
+    
+
+    <meta name="keyword"  content="Epidemiology, IT, cloud">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>修正ポアソン回帰を使った研究でよく使ったコードを関数として残す | Sacoche</title>
+
+    <link rel="canonical" href="/post/2022-08-25-modifiedpoissoncode/">
+
+    
+    
+    
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    
+    <link rel="stylesheet" href="/css/hugo-theme-cleanwhite.min.css">
+
+    
+    <link rel="stylesheet" href="/css/zanshang.css">
+
+    
+    <link href="https://cdn.jsdelivr.net/gh/FortAwesome/Font-Awesome@5.15.1/css/all.css" rel="stylesheet" type="text/css">
+
+    
+    
+
+    
+    <script src="/js/jquery.min.js"></script>
+
+    
+    <script src="/js/bootstrap.min.js"></script>
+
+    
+    <script src="/js/hux-blog.min.js"></script>
+
+    
+    
+
+</head>
+
+
+
+
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+
+    <div class="container-fluid">
+        
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Sacoche</a>
+        </div>
+
+        
+        
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">All Posts</a>
+                    </li>
+                    
+                        
+                        <li>
+                            <a href="/categories/coding-for-beginners">coding-for-beginners</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/epidemiology">epidemiology</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/others">others</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/statistics">statistics</a>
+                        </li>
+                        
+                        <li>
+                            <a href="/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0">自作関数</a>
+                        </li>
+                        
+                    
+                    
+		    
+                        <li><a href="/archive/">ARCHIVE</a></li>
+                    
+                        <li><a href="/about/">ABOUT</a></li>
+                    
+                        <li><a href="/tags/">TAGS</a></li>
+                    
+
+                    
+		    <li>
+                        <a href="/search"><i class="fa fa-search"></i></a>
+		    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+</nav>
+<script>
+    
+    
+    
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        
+            $navbar.className = " ";
+            
+            setTimeout(function(){
+                
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+
+
+<style type="text/css">
+    header.intro-header {
+        background-image: url('/img/home-bg-jeep.jpg')
+    }
+</style>
+
+<header class="intro-header" >
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0" title="自作関数">
+                            自作関数
+                        </a>
+                        
+                        <a class="tag" href="/tags/epidemiology" title="Epidemiology">
+                            Epidemiology
+                        </a>
+                        
+                        <a class="tag" href="/tags/r" title="R">
+                            R
+                        </a>
+                        
+                    </div>
+                    <h1>修正ポアソン回帰を使った研究でよく使ったコードを関数として残す</h1>
+                    <h2 class="subheading">ロバスト分散に基づく信頼区間を出す、欠測値補完・多重代入データでの分析での信頼区間を出す関数</h2>
+                    <span class="meta">
+                        
+                            Posted by 
+                            
+                                    Sacoche
+                             
+                            on 
+                            Thursday, August 25, 2022
+                            
+                            
+                            
+                            
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+<article>
+    <div class="container">
+        <div class="row">
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                
+                
+<script src="https://toro-maguro.github.io/post/2022-08-25-modifiedpoissoncode/index_files/header-attrs/header-attrs.js"></script>
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<div id="はじめに" class="section level1">
+<h1>はじめに</h1>
+<p>2値のアウトカムに関して、イベント発生割合が10%を超える場面ではオッズ比がリスク比 (有病率比) の良い近似にならないことから、定番のロジスティック回帰の使用が不適切になる場面があります。</p>
+<p>(参考: <a href="https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/">修正ポアソン回帰</a>、<a href="https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/">リスク比とオッズ比の乖離</a>)</p>
+<p>こうした場合ロバスト分散を使ったポアソン回帰を使うことがありますが、
+Rの<code>glm()</code>ではロバスト分散による信頼区間を得ることができません。</p>
+<p>いちいち、コードベタ打ちするのは <strong>Don’t Repeat Yourself (コードを繰り返すな！)</strong> の原則に反しますし、何よりめんどくさい。(参考: <a href="https://toro-maguro.github.io/post/2022-08-10-montyhall/">MontyHall問題</a>)</p>
+<p>そこで、関数化してソースコードとして置いておくと非常に楽です。やりましょう。</p>
+</div>
+<div id="コード" class="section level1">
+<h1>コード</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(lmtest, sandwich)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 修正ポアソン回帰の点推定値, 信頼区間, p値をデータフレームで返す</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>GetConfint <span class="ot">&lt;-</span> <span class="cf">function</span>(model_result, <span class="at">siglevel=</span><span class="fl">0.05</span>, <span class="at">digits=</span><span class="dv">4</span>){</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  res_coeftest <span class="ot">&lt;-</span> <span class="fu">coeftest</span>(model_result, <span class="at">vcov =</span> sandwich)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  Estimate <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(res_coeftest[,<span class="dv">1</span>]), digits)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  LowerCI <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(res_coeftest[,<span class="dv">1</span>] <span class="sc">+</span> <span class="fu">qnorm</span>(siglevel<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>res_coeftest[,<span class="dv">2</span>]), digits)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  UpperCI <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(res_coeftest[,<span class="dv">1</span>] <span class="sc">-</span> <span class="fu">qnorm</span>(siglevel<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>res_coeftest[,<span class="dv">2</span>]), digits)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  p_value <span class="ot">&lt;-</span> <span class="fu">round</span>(res_coeftest[,<span class="dv">4</span>], digits)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(Estimate, LowerCI, UpperCI, p_value)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 解析人数をprintする関数</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>PrintNumberAnalyzed <span class="ot">&lt;-</span> <span class="cf">function</span>(model_result){</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  n_sample <span class="ot">&lt;-</span> <span class="fu">length</span>(model_result[[<span class="st">&quot;residuals&quot;</span>]])</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  sample_usage_proportion <span class="ot">&lt;-</span> <span class="fu">round</span>(n_sample<span class="sc">*</span><span class="dv">100</span> <span class="sc">/</span> <span class="fu">nrow</span>(model_result[[<span class="st">&quot;data&quot;</span>]]), <span class="dv">1</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  message_n_sample <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;number of analysed samples: N=&quot;</span>, n_sample, <span class="st">&quot;, &quot;</span>, </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                             sample_usage_proportion, <span class="st">&quot;% of data was included in this analysis&quot;</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(message_n_sample)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># miceで多重代入したデータで解析した結果に対し、点推定値・信頼区間・p値を出力する関数</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>GetConfint_mi <span class="ot">&lt;-</span> <span class="cf">function</span>(with_result_mi, <span class="at">siglevel=</span><span class="fl">0.05</span>, <span class="at">digits=</span><span class="dv">4</span>){</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  result_mi <span class="ot">&lt;-</span> <span class="fu">summary</span>(<span class="fu">pool</span>(with_result_mi))</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  variables <span class="ot">&lt;-</span> <span class="fu">as.character</span>(result_mi[,<span class="dv">1</span>])</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  Estimate <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(result_mi[,<span class="dv">2</span>]), digits)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  LowerCI <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(result_mi[,<span class="dv">2</span>] <span class="sc">+</span> <span class="fu">qnorm</span>(siglevel<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>result_mi[,<span class="dv">3</span>]), digits)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  UpperCI <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">exp</span>(result_mi[,<span class="dv">2</span>] <span class="sc">-</span> <span class="fu">qnorm</span>(siglevel<span class="sc">/</span><span class="dv">2</span>)<span class="sc">*</span>result_mi[,<span class="dv">3</span>]), digits)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  p_value <span class="ot">&lt;-</span> <span class="fu">round</span>(result_mi[,<span class="dv">6</span>], digits)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(variables, Estimate, LowerCI, UpperCI, p_value)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="使い方" class="section level1">
+<h1>使い方</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, lmtest, sandwich, mice, miceadds)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;./index_files/myfunction.R&quot;</span>) <span class="co"># 自作関数</span></span></code></pre></div>
+<p>適当にデータを作ります。これらのコードもソースコード
+(<a href="https://github.com/toro-maguro/toro-maguro.github.io/tree/main/content/post/2022-08-25-modifiedpoissoncode/index_files/myfunction.R">GitHub</a>)
+に入れていますので、興味あれば覗いてください。</p>
+<p>使う変数はこの通りです。</p>
+<ul>
+<li>y: アウトカム、2値</li>
+<li>x: 曝露変数、2値</li>
+<li>income_cat: 交絡因子。income_catは真の値で、そこから欠測を発生させたものがincome_cat_observed。</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>d0 <span class="ot">&lt;-</span> <span class="fu">MakeData</span>(<span class="at">n_sample =</span> <span class="dv">10000</span>, <span class="at">risk_ratio =</span> <span class="fl">1.5</span>) <span class="co"># 研究対象者数とリスク比を指定して、データを返す関数</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">GenerateMissing_MAR</span>(d0) <span class="co"># incomeに対して、MARで欠測を発生させる関数</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df)</span></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="right">ID</th>
+<th align="right">sex</th>
+<th align="right">income</th>
+<th align="right">income_observed</th>
+<th align="left">income_cat</th>
+<th align="left">income_cat_observed</th>
+<th align="right">x</th>
+<th align="right">y</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1105301.2</td>
+<td align="right">1105301</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">6057393.1</td>
+<td align="right">6057393</td>
+<td align="left">&lt;700</td>
+<td align="left">&lt;700</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">7072681.9</td>
+<td align="right">7072682</td>
+<td align="left">≥700</td>
+<td align="left">≥700</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">1154965.8</td>
+<td align="right">1154966</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">575120.9</td>
+<td align="right">NA</td>
+<td align="left">&lt;250</td>
+<td align="left">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">1</td>
+<td align="right">1763340.3</td>
+<td align="right">1763340</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="修正ポアソン回帰" class="section level3">
+<h3>修正ポアソン回帰</h3>
+<p><code>PrintNumberAnalyzed()</code> も、<code>GetConfint()</code> のどちらも、<code>glm()</code>の結果を引数とします。以下のような使い方です。</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> adjusted <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">+</span> income_cat_observed, <span class="at">data =</span> df, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">&quot;log&quot;</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 標準glmはリストワイズ除去なので、解析対象者が減る</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">PrintNumberAnalyzed</span>(fit1)</span></code></pre></div>
+<pre><code>## [1] &quot;number of analysed samples: N=6991, 69.9% of data was included in this analysis&quot;</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 解析結果</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">GetConfint</span>(fit1)</span></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Estimate</th>
+<th align="right">LowerCI</th>
+<th align="right">UpperCI</th>
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.2323</td>
+<td align="right">0.2133</td>
+<td align="right">0.2530</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">1.7432</td>
+<td align="right">1.5743</td>
+<td align="right">1.9303</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td align="left">income_cat_observed&lt;400</td>
+<td align="right">0.8265</td>
+<td align="right">0.7307</td>
+<td align="right">0.9348</td>
+<td align="right">0.0024</td>
+</tr>
+<tr class="even">
+<td align="left">income_cat_observed&lt;700</td>
+<td align="right">0.6111</td>
+<td align="right">0.5381</td>
+<td align="right">0.6941</td>
+<td align="right">0.0000</td>
+</tr>
+<tr class="odd">
+<td align="left">income_cat_observed≥700</td>
+<td align="right">0.4436</td>
+<td align="right">0.3818</td>
+<td align="right">0.5153</td>
+<td align="right">0.0000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="多重代入のデータに対する修正ポアソン回帰" class="section level3">
+<h3>多重代入のデータに対する修正ポアソン回帰</h3>
+<div id="多重代入" class="section level4">
+<h4>多重代入</h4>
+<p>本論とは外れますが、多重代入の処理です。</p>
+<p>今回のデータは欠測発生前の真の値も含んでいるため、まず除外してから多重代入します。
+時間がかかると鬱陶しいので、多重代入データは3つだけで。</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> <span class="fu">select</span>(ID, sex, x, y, income_cat_observed) </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>imp <span class="ot">&lt;-</span> <span class="fu">mice</span>(df2, <span class="at">m =</span> <span class="dv">3</span>, <span class="at">printFlag =</span> <span class="cn">FALSE</span>, <span class="at">seed =</span> <span class="dv">123</span>) <span class="co"># defaultMethodは要確認、今回はpolrが適用される</span></span></code></pre></div>
+<p>いちおう、代入されているかを確認します。<br>
+income_cat_imputedは代入されたデータ、income_cat_trueは欠測発生前の真の値です。</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># action=nで作成したn番目の代入済みデータセットを確認できる</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>miced_df <span class="ot">&lt;-</span> <span class="fu">complete</span>(imp, <span class="at">action =</span> <span class="dv">1</span>) </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># オリジナルのデータと比較する</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>df_merge <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span> </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">income_cat_true =</span> income_cat) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">income_missing =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(income_observed), <span class="dv">1</span>, <span class="dv">0</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID, income_cat_true, income_missing)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>miced_df <span class="ot">&lt;-</span> <span class="fu">left_join</span>(miced_df, df_merge, <span class="at">by =</span> <span class="st">&quot;ID&quot;</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 確認</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>miced_df <span class="sc">%&gt;%</span> </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">income_cat_imputed =</span> income_cat_observed) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="right">ID</th>
+<th align="right">sex</th>
+<th align="right">x</th>
+<th align="right">y</th>
+<th align="left">income_cat_imputed</th>
+<th align="left">income_cat_true</th>
+<th align="right">income_missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">&lt;700</td>
+<td align="left">&lt;700</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">≥700</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">&lt;250</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">&lt;250</td>
+<td align="left">&lt;250</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">7</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">≥700</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">≥700</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">9</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">≥700</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">10</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">≥700</td>
+<td align="left">&lt;250</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>代入された値が真の値と一致しているかどうかは置いておいて、代入自体は正しくされていることがわかりました。</p>
+</div>
+<div id="解析結果の出力" class="section level4">
+<h4>解析結果の出力</h4>
+<p>本題です。多重代入データでの修正ポアソン回帰の結果を出力します。</p>
+<p><code>GetConfint_mi()</code>は<code>with(imp, coeftest(glm()))</code>を引数とします。こんな感じ。</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fit2_mi <span class="ot">&lt;-</span> <span class="fu">with</span>(imp, <span class="fu">coeftest</span>(<span class="fu">glm</span>(y <span class="sc">~</span> x <span class="sc">+</span> income_cat_observed, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">&quot;log&quot;</span>)), <span class="at">vcov =</span> sandwich))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">GetConfint_mi</span>(fit2_mi)</span></code></pre></div>
+<pre><code>## Original model not retained as part of coeftest object. For additional model summary information (r.squared, df, etc.), consider passing `glance.coeftest()` an object where the underlying model has been saved, i.e.`lmtest::coeftest(..., save = TRUE)`.
+## This message is displayed once per session.</code></pre>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">variables</th>
+<th align="right">Estimate</th>
+<th align="right">LowerCI</th>
+<th align="right">UpperCI</th>
+<th align="right">p_value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.2379</td>
+<td align="right">0.2210</td>
+<td align="right">0.2561</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">1.6178</td>
+<td align="right">1.4808</td>
+<td align="right">1.7675</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">income_cat_observed&lt;400</td>
+<td align="right">0.8287</td>
+<td align="right">0.7426</td>
+<td align="right">0.9248</td>
+<td align="right">0.001</td>
+</tr>
+<tr class="even">
+<td align="left">income_cat_observed&lt;700</td>
+<td align="right">0.6079</td>
+<td align="right">0.5452</td>
+<td align="right">0.6779</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">income_cat_observed≥700</td>
+<td align="right">0.4495</td>
+<td align="right">0.3893</td>
+<td align="right">0.5191</td>
+<td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div id="おしまい" class="section level1">
+<h1>おしまい</h1>
+<p>備忘録的に残しておきました。</p>
+<p>コード長ったらしいと読む気失せるし修正するのも大変なので、できるだけ関数化して使い回しましょう。めっちゃ戒めです。</p>
+<p>そんじゃあね〜</p>
+</div>
+
+
+                
+
+                
+                <hr>
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/post/2022-08-18-correlation-regression/" data-toggle="tooltip" data-placement="top" title="相関と回帰は同じわけじゃない">&larr;
+                            Previous Post</a>
+                    </li>
+                    
+                    
+                </ul>
+                
+
+                
+
+
+
+            </div>
+
+            
+            
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+            
+
+            
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                        
+                        
+                        
+                        <a href="/tags/coding-skill" title="coding-skill">
+                            coding-skill
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/epidemiology" title="epidemiology">
+                            epidemiology
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/power" title="power">
+                            power
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/python" title="python">
+                            python
+                        </a>
+                        
+                        
+                        
+                        <a href="/tags/r" title="r">
+                            r
+                        </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a href="/tags/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0" title="自作関数">
+                            自作関数
+                        </a>
+                        
+                        
+                    </div>
+                </section>
+                
+
+                
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">                  
+                    
+                    
+                    
+                    
+                    
+
+		            
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/toro-maguro/toro-maguro.github.io">
+                            <span class="fa-stack fa-lg">
+                                <i class="fas fa-circle fa-stack-2x"></i>
+                                <i class="fab fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+		            
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+            
+            
+            
+           
+                   <li>
+                       <a href='' rel="alternate" type="application/rss+xml" title="Sacoche" >
+                           <span class="fa-stack fa-lg">
+                               <i class="fas fa-circle fa-stack-2x"></i>
+                               <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
+                           </span>
+                       </a>
+                   </li>
+            
+             </ul>
+		<p class="copyright text-muted">
+                    Copyright &copy; Sacoche 2022
+                    <br>
+                    <a href="https://themes.gohugo.io/hugo-theme-cleanwhite">CleanWhite Hugo Theme</a> by <a href="https://zhaohuabing.com">Huabing</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=zhaohuabing&repo=hugo-theme-cleanwhite&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+
+
+<script>
+    function loadAsync(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+
+
+
+
+<script>
+    
+    if($('#tag_cloud').length !== 0){
+        loadAsync("/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+
+<script>
+    loadAsync("https://cdn.jsdelivr.net/npm/fastclick@1.0.6/lib/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+    function generateCatalog(selector) {
+
+        
+        
+        
+        
+            _containerSelector = 'div.post-container'
+        
+
+        
+        var P = $(_containerSelector), a, n, t, l, i, c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+
+        
+        $(selector).html('')
+
+        
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#" + $(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="' + i + '" rel="nofollow">' + t + '</a>');
+            l = $('<li class="' + n + '_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;
+    }
+
+    generateCatalog(".catalog-body");
+
+    
+    $(".catalog-toggle").click((function (e) {
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    
+
+
+    loadAsync("\/js\/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+
+</body>
+</html>

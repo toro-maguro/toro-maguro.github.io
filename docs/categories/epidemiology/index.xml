@@ -17,15 +17,6 @@
     </item>
     
     <item>
-      <title>世帯収入の模擬データを作る</title>
-      <link>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</link>
-      <pubDate>Sun, 07 Aug 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</guid>
-      <description>やること e-statの令和元年度国民生活基礎調査に基づいて、世帯収入のダミーデータを生む関数を作ります。 source: e-stat なお、単身世帯・性別等の個別化さ</description>
-    </item>
-    
-    <item>
       <title>検出力の事後解析、不要説について</title>
       <link>https://toro-maguro.github.io/post/2022-08-06-posthoc-power-analysis/</link>
       <pubDate>Sat, 06 Aug 2022 00:00:00 +0000</pubDate>
