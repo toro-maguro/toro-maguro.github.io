@@ -303,11 +303,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="はじめに" class="section level1">
 <h1>はじめに</h1>
-<p>2値のアウトカムに関して、イベント発生割合が10%を超える場面ではオッズ比がリスク比 (有病率比) の良い近似にならないことから、定番のロジスティック回帰の使用が不適切になる場面があります。</p>
+<p>2値アウトカムのイベント発生割合が10%を超えるデータでは、オッズ比がリスク比 (有病率比) の良い近似になりません。
+このとき、定番のロジスティック回帰の使用が不適切になると考えられます。</p>
 <p>(参考: <a href="https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/">修正ポアソン回帰</a>、<a href="https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/">リスク比とオッズ比の乖離</a>)</p>
-<p>こうした場合ロバスト分散を使ったポアソン回帰を使うことがありますが、
+<p>こうした場合、ロバスト分散を使ったポアソン回帰を使うことがありますが、
 Rの<code>glm()</code>ではロバスト分散による信頼区間を得ることができません。</p>
-<p>いちいち、コードベタ打ちするのは <strong>Don’t Repeat Yourself (コードを繰り返すな！)</strong> の原則に反しますし、何よりめんどくさい。(参考: <a href="https://toro-maguro.github.io/post/2022-08-10-montyhall/">MontyHall問題</a>)</p>
+<p>いちいちコードベタ打ちするのは<strong>Don’t Repeat Yourself (コードを繰り返すな！)</strong>の原則に反しますし、何よりめんどくさい。
+(参考: <a href="https://toro-maguro.github.io/post/2022-08-10-montyhall/">MontyHall問題</a>)</p>
 <p>そこで、関数化してソースコードとして置いておくと非常に楽です。やりましょう。</p>
 </div>
 <div id="コード" class="section level1">
@@ -708,7 +710,8 @@ income_cat_imputedは代入されたデータ、income_cat_trueは欠測発生�
 <div id="おしまい" class="section level1">
 <h1>おしまい</h1>
 <p>備忘録的に残しておきました。</p>
-<p>コード長ったらしいと読む気失せるし修正するのも大変なので、できるだけ関数化して使い回しましょう。めっちゃ戒めです。</p>
+<p>コード長ったらしいと読む気失せるし修正するのも大変なので、できるだけ関数化して使い回しましょう。
+修士のときのコードを見ると特大ブーメランなので、戒めとして。</p>
 <p>そんじゃあね〜</p>
 </div>
 
