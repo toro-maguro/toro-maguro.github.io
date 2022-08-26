@@ -1,5 +1,5 @@
 ---
-title: 修正ポアソン回帰を使った研究でよく使ったコードを関数として残す
+title: 修正ポアソン回帰を使った研究での必須コードを関数として残す
 author: ''
 date: '2022-08-25'
 slug: []
@@ -88,14 +88,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="はじめに" class="section level1">
 <h1>はじめに</h1>
-<p>2値アウトカムのイベント発生割合が10%を超えるデータでは、オッズ比がリスク比 (有病率比) の良い近似になりません。
+<p>2値アウトカムのイベント発生割合が10%を超えるデータでは、オッズ比がリスク比 (もしくは有病率比) の良い近似になりません。
 このとき、定番のロジスティック回帰の使用が不適切になると考えられます。</p>
 <p>(参考: <a href="https://toro-maguro.github.io/post/2022-08-05-regressioncommonbinaryoutcome/">修正ポアソン回帰</a>、<a href="https://toro-maguro.github.io/post/2022-08-05-riskratio-vs-oddsratio/">リスク比とオッズ比の乖離</a>)</p>
 <p>こうした場合、ロバスト分散を使ったポアソン回帰を使うことがありますが、
-Rの<code>glm()</code>ではロバスト分散による信頼区間を得ることができません。</p>
-<p>いちいちコードベタ打ちするのは<strong>Don’t Repeat Yourself (コードを繰り返すな！)</strong>の原則に反しますし、何よりめんどくさい。
+Rの<code>glm()</code>ではロバスト分散による信頼区間を得ることができません。
+<code>coeftest(vcov = sandwich)</code>をした上で、推定値をリスク比で解釈するためにexponentialしたり、信頼区間を計算しなくてはいけません。めんどくさい…</p>
+<p>いちいちコードベタ打ちするのは<strong>Don’t Repeat Yourself (コードを繰り返すな！)</strong>の原則に反しますし、
+何より読みにくくてめんどくさい。
 (参考: <a href="https://toro-maguro.github.io/post/2022-08-10-montyhall/">MontyHall問題</a>)</p>
-<p>そこで、関数化してソースコードとして置いておくと非常に楽です。やりましょう。</p>
+<p>そこで、必要な機能を関数化してソースコードとして置いておくと非常に楽です。やりましょう。</p>
 </div>
 <div id="コード" class="section level1">
 <h1>コード</h1>
