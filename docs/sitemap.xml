@@ -3,30 +3,39 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://toro-maguro.github.io/categories/</loc>
-    <lastmod>2022-08-25T00:00:00+00:00</lastmod>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/post/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/r/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/post/2022-08-29-r-sql/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/sql/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/categories/tech/</loc>
+    <lastmod>2022-08-29T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/tags/epidemiology/</loc>
     <lastmod>2022-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://toro-maguro.github.io/post/</loc>
+    <loc>https://toro-maguro.github.io/tags/myfunction/</loc>
     <lastmod>2022-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://toro-maguro.github.io/tags/r/</loc>
-    <lastmod>2022-08-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/</loc>
-    <lastmod>2022-08-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/tags/</loc>
+    <loc>https://toro-maguro.github.io/categories/myfunction/</loc>
     <lastmod>2022-08-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/post/2022-08-25-modifiedpoissoncode/</loc>
-    <lastmod>2022-08-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/tags/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</loc>
-    <lastmod>2022-08-25T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/categories/%E8%87%AA%E4%BD%9C%E9%96%A2%E6%95%B0/</loc>
     <lastmod>2022-08-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/tags/statistics/</loc>
@@ -68,13 +77,13 @@
     <loc>https://toro-maguro.github.io/post/2022-08-06-posthoc-power-analysis/</loc>
     <lastmod>2022-08-06T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://toro-maguro.github.io/tags/others/</loc>
-    <lastmod>2022-08-05T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://toro-maguro.github.io/categories/others/</loc>
-    <lastmod>2022-08-05T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://toro-maguro.github.io/post/2022-08-05-powerfunction/</loc>
+    <lastmod>2022-08-05T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/tags/%E3%81%9D%E3%81%AE%E4%BB%96/</loc>
+    <lastmod>2022-08-05T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://toro-maguro.github.io/categories/%E3%81%9D%E3%81%AE%E4%BB%96/</loc>
     <lastmod>2022-08-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://toro-maguro.github.io/post/2022-08-05-moveblog/</loc>

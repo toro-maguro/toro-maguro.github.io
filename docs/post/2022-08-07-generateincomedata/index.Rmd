@@ -4,11 +4,11 @@ author: ''
 date: '2022-08-07'
 slug: []
 categories:
-  - 自作関数
+  - MyFunction
 tags:
   - Epidemiology
   - R
-  - 自作関数
+  - MyFunction
 subtitle: ''
 description: ''
 image: ''

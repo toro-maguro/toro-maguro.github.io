@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>MyFunction on Sacoche</title>
+    <link>https://toro-maguro.github.io/tags/myfunction/</link>
+    <description>Recent content in MyFunction on Sacoche</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>ja</language>
+    <lastBuildDate>Thu, 25 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/myfunction/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>修正ポアソン回帰を使った研究での必須コードを関数として残す</title>
+      <link>https://toro-maguro.github.io/post/2022-08-25-modifiedpoissoncode/</link>
+      <pubDate>Thu, 25 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-25-modifiedpoissoncode/</guid>
+      <description>はじめに 2値アウトカムのイベント発生割合が10%を超えるデータでは、オッズ比がリスク比 (もしくは有病率比) の良い近似になりません。 このとき、</description>
+    </item>
+    
+    <item>
+      <title>世帯収入の模擬データを作る</title>
+      <link>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</link>
+      <pubDate>Sun, 07 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://toro-maguro.github.io/post/2022-08-07-generateincomedata/</guid>
+      <description>やること e-statの令和元年度国民生活基礎調査に基づいて、世帯収入のダミーデータを生む関数を作ります。 source: e-stat なお、単身世帯・性別等の個別化さ</description>
+    </item>
+    
+  </channel>
+</rss>

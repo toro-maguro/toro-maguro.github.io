@@ -4,9 +4,9 @@ author: ''
 date: '2022-08-05'
 slug: []
 categories:
-  - Others
+  - その他
 tags:
-  - Others
+  - その他
 subtitle: ''
 description: ''
 image: ''

@@ -1,0 +1,68 @@
+---
+title: RStudioとMySQLを接続する
+author: 
+date: '2022-08-29'
+slug: []
+categories:
+  - Tech
+tags:
+  - SQL
+  - R
+subtitle: '"エス・キュー・エル"って読むよりも、"シークェル"の方が玄人感が出る (小学生並みの感想)'
+description: ''
+image: ''
+output:
+  blogdown::html_page:
+    highlight: default
+    df_print: kable
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<div id="内容" class="section level1">
+<h1>内容</h1>
+<ul>
+<li>SQLの勉強として</li>
+<li>備忘録です</li>
+</ul>
+<div id="環境" class="section level3">
+<h3>環境</h3>
+<ul>
+<li>Intel Mac Mini (2018)</li>
+<li>R version 4.1.2</li>
+<li>RStudio 2022.02.3+492 for macOS</li>
+</ul>
+</div>
+</div>
+<div id="mysqlを入れる" class="section level1">
+<h1>MySQLを入れる</h1>
+<p><a href="https://prog-8.com/docs/mysql-env">Progate</a>を参考にインストール</p>
+<div id="mysql-workbenchも入れる" class="section level3">
+<h3>MySQL Workbenchも入れる</h3>
+<p>参考: <a href="https://qiita.com/Hoi-hoi/items/a230f6564614eeddef8c#7-mysql-workbench%E3%82%92%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB">Qiita</a></p>
+<p>あんまりGUIは使わないかもしれないが一応。なんだかんだ助かる。</p>
+</div>
+</div>
+<div id="mysqlで仮のdbを作る" class="section level1">
+<h1>MySQLで仮のDBを作る</h1>
+<p><code>mysql&gt; show databases;</code>で、現在のデータベースを表示させることが可能です。</p>
+<blockquote>
+<table style="width:29%;">
+<colgroup>
+<col width="29%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td>Database</td>
+</tr>
+<tr class="even">
+<td>information_schema
+mysql
+performance_schema
+sys</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+</div>
