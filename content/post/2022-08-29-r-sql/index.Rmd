@@ -1,5 +1,5 @@
 ---
-title: RStudioとMySQLを接続する
+title: RとMySQLを接続する
 author: 
 date: '2022-08-29'
 slug: []
@@ -8,7 +8,7 @@ categories:
 tags:
   - SQL
   - R
-subtitle: '"エス・キュー・エル"って読むよりも、"シークェル"の方が玄人感が出る (小学生並みの感想)'
+subtitle: '"エス・キュー・エル"って読むよりも、"シークル"の方が玄人感が出る (小学生並みの感想)'
 description: ''
 image: ''
 output:
@@ -18,6 +18,8 @@ output:
 ---
 
 # 内容
+
+SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き芸人だからRStudioでSQLのQueryを書きたくなった話
 
 * SQLの勉強として練習環境を作りたかった
 * 備忘録です
@@ -29,7 +31,7 @@ output:
 * R version 4.1.2
 * RStudio 2022.02.3+492 for macOS
 
-# MySQLを入れる
+# MySQLをMacに入れる
 
 [Progate](https://prog-8.com/docs/mysql-env)を参考にインストール
 
@@ -56,14 +58,14 @@ MySQL公式サイトにも掲載されているemployeeデータをダウンロ�
 > +----------------------+
 | Tables_in_employees  |
 +----------------------+
-| current_dept_emp     |
-| departments          |
-| dept_emp             |
-| dept_emp_latest_date |
-| dept_manager         |
-| employees            |
-| salaries             |
-| titles               |
+| current_dept_emp <br>|
+| departments <br>     |
+| dept_emp<br>         |
+| dept_emp_latest_date <br>|
+| dept_manager  <br>   |
+| employees   <br>     |
+| salaries  <br>       |
+| titles  <br>         |
 +----------------------+
 8 rows in set (0.00 sec)
 

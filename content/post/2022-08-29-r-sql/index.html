@@ -1,5 +1,5 @@
 ---
-title: RStudioとMySQLを接続する
+title: RとMySQLを接続する
 author: 
 date: '2022-08-29'
 slug: []
@@ -8,7 +8,7 @@ categories:
 tags:
   - SQL
   - R
-subtitle: '"エス・キュー・エル"って読むよりも、"シークェル"の方が玄人感が出る (小学生並みの感想)'
+subtitle: '"エス・キュー・エル"って読むよりも、"シークル"の方が玄人感が出る (小学生並みの感想)'
 description: ''
 image: ''
 output:
@@ -86,6 +86,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="内容" class="section level1">
 <h1>内容</h1>
+<p>SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き芸人だからRStudioでSQLのQueryを書きたくなった話</p>
 <ul>
 <li>SQLの勉強として練習環境を作りたかった</li>
 <li>備忘録です</li>
@@ -100,8 +101,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul>
 </div>
 </div>
-<div id="mysqlを入れる" class="section level1">
-<h1>MySQLを入れる</h1>
+<div id="mysqlをmacに入れる" class="section level1">
+<h1>MySQLをMacに入れる</h1>
 <p><a href="https://prog-8.com/docs/mysql-env">Progate</a>を参考にインストール</p>
 <p>再度入るときは<code>$ mysql --user=root --password</code>や<code>$ mysql -u root -p</code>をターミナルに入れると、rootとして入ることができる。</p>
 <div id="mysql-workbenchも入れる" class="section level3">
@@ -130,14 +131,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <td>Tables_in_employees</td>
 </tr>
 <tr class="even">
-<td>current_dept_emp
-departments
-dept_emp
-dept_emp_latest_date
-dept_manager
-employees
-salaries
-titles</td>
+<td>current_dept_emp <br>
+departments <br>
+dept_emp<br>
+dept_emp_latest_date <br>
+dept_manager <br>
+employees <br>
+salaries <br>
+titles <br></td>
 </tr>
 </tbody>
 </table>

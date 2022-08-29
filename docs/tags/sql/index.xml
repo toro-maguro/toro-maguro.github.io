@@ -8,12 +8,12 @@
     <language>ja</language>
     <lastBuildDate>Mon, 29 Aug 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://toro-maguro.github.io/tags/sql/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>RStudioとMySQLを接続する</title>
+      <title>RとMySQLを接続する</title>
       <link>https://toro-maguro.github.io/post/2022-08-29-r-sql/</link>
       <pubDate>Mon, 29 Aug 2022 00:00:00 +0000</pubDate>
       
       <guid>https://toro-maguro.github.io/post/2022-08-29-r-sql/</guid>
-      <description>内容 SQLの勉強として練習環境を作りたかった 備忘録です 環境 Intel Mac Mini (2018) MySQL 8.0.23 R version 4.1.2 RStudio 2022.02.3+492 for macOS MySQLを入れる Progateを参考にインストール 再度</description>
+      <description>内容 SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き芸人だからRStudioでSQLのQueryを書きたくなった話 SQLの</description>
     </item>
     
   </channel>
