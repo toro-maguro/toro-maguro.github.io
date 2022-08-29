@@ -33,7 +33,7 @@ output:
 
 [Progate](https://prog-8.com/docs/mysql-env)を参考にインストール
 
-再度入るときは`mysql --user=root --password`をターミナルに入れると、rootとして入ることができる。
+再度入るときは`$ mysql --user=root --password`や`$ mysql -u root -p`をターミナルに入れると、rootとして入ることができる。
 
 ### MySQL Workbenchも入れる
 
