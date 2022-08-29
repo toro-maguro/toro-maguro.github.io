@@ -22,6 +22,7 @@ output:
 SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き芸人だからRStudioでSQLのQueryを書きたくなった話
 
 * SQLの勉強として練習環境を作りたかった
+* RStudioで書きたい (R信者)
 * 備忘録です
 
 ### 環境
@@ -35,7 +36,10 @@ SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き�
 
 [Progate](https://prog-8.com/docs/mysql-env)を参考にインストール
 
-再度入るときは`$ mysql --user=root --password`や`$ mysql -u root -p`をターミナルに入れると、rootとして入ることができる。
+ターミナルからMySQLを立ち上げるときは、以下のコードを流せば良い。どっちでも入れる。
+
+* `$ mysql --user=root --password` 
+* `$ mysql -u root -p`
 
 ### MySQL Workbenchも入れる
 
@@ -45,11 +49,11 @@ SQLの勉強でいろいろ試したいなと思ったけど、RStudio大好き�
 
 # MySQLに練習用のデータベースを入れる
 
-MySQL公式サイトにも掲載されているemployeeデータをダウンロードします。
+[MySQL公式サイト](https://dev.mysql.com/doc/index-other.html)にも掲載されているemployeeデータをダウンロードします。
 
 1. [GitHub](https://github.com/datacharmer/test_db)から、test_db-master.zipをダウンロードして解凍する
 2. ターミナルで解凍したフォルダにcdして、カレントディレクトリにする
-3. `$ mysql -u ユーザー名 -p < employee.sql` と唱える
+3. ターミナルで `$ mysql -u ユーザー名 -p < employee.sql` と唱える
 
 `mysql> show databases;`で、データベースの中にemplyeesが入っているはず。
 
@@ -61,7 +65,7 @@ MySQL公式サイトにも掲載されているemployeeデータをダウンロ�
 | current_dept_emp <br>|
 | departments <br>     |
 | dept_emp<br>         |
-| dept_emp_latest_date <br>|
+| dept_emp_latest_date <br> |
 | dept_manager  <br>   |
 | employees   <br>     |
 | salaries  <br>       |
@@ -73,18 +77,18 @@ MySQL公式サイトにも掲載されているemployeeデータをダウンロ�
 
 <br>
 
-# RStudioからMySQLに接続
+# RからMySQLに接続
 
 ここからは、RStudioを操作します。
 
 まずは必要なライブラリをインストールします。今回はMySQLを使うので、{RMySQL}を使います。
 
 ```{r}
-pacman::p_load(RMySQL) # DBIも読み込まれる
+pacman::p_load(RMySQL) 
 ```
 
 
-RStudioからMySQLに接続するコード。ユーザー名やパスワードを直書きするなら、こんな形になります (非推奨)。
+RからMySQLに接続するコード。ユーザー名やパスワードを直書きするなら、こんな形になります (非推奨)。
 
 ```{r}
 conn <- dbConnect(
@@ -104,8 +108,8 @@ workbenchの画面からLocal instanceを右クリック > Edit Connection か�
 ![Workbenchの画面](./index_files/workbench1.png)
 
 
-RStudioをMySQLとの接続でパスワード等をそのまま書き込むのは危険です。
-ポップアップ画面で入力する形式を採用するなら、こちら。↑のような直書きはおすすめできません。
+RとMySQLとの接続でパスワード等をそのまま書き込むのは危険です。
+ポップアップ画面で入力する形式を採用するなら、こちら。上述のようなコードに直接書くのはおすすめできません。
 
 ```{r, eval=FALSE}
 conn <- dbConnect(
@@ -118,9 +122,11 @@ conn <- dbConnect(
 )
 ```
 
+SSLの暗号化もやったほうがいいです。ただし、ローカル環境で練習する分には、何をどうやっていても問題ないはず。今回は適当にやります。
+
 <br>
 
-今RStudioはMySQLとつながっているので、データを確認できるはずです
+さて、今RStudioはMySQLとつながっているので、データを確認できるはずです。employees DBに入っているtablesを確認します。
 
 ```{r}
 dbListTables(conn)
@@ -133,14 +139,16 @@ dbListTables(conn)
 ```{r}
 # SQL風に書けます
 firstquery <- "
+
 SELECT * 
 FROM departments 
 LIMIT 5
+
 "
-# 文末のセミコロンはR表記の場合不要になる
+# 文末のセミコロンはR表記の場合不要です
 ```
 
-クエリを書いたら、`dbGetQuery()`で引っ張ってこれます。
+クエリを書いたら、`dbGetQuery()`でRにテーブルを引っ張ってこれます。
 
 ```{r}
 head_departments <- dbGetQuery(conn, firstquery)
@@ -151,8 +159,9 @@ head_departments
 
 # おしまい
 
-mysqlをmacに入れて、RStudioと接続しました。単純にSQLを練習するならIDEに入れなくてもいいけど、どうせならIDEあった方が嬉しいですよね。
+mysqlをmacに入れて、Rと接続しました。単純にSQLを練習するならIDEに入れなくてもいいけど、どうせならIDEあった方が嬉しいですよね。
+RStudio芸人なのでRStudioに入れて遊びました。勉強するぞー。
 
-そんじゃーね
+そんじゃーね！
 
 
